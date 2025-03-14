@@ -14,7 +14,7 @@ def login_page():
     if login_option == "Login":
         if st.button("Entrar"):
             try:
-                # Verifica se o e-mail está confirmado na tabela auth.users
+                # Verifica se o e-mail foi confirmado na auth.users
                 response = supabase.table("auth.users").select("confirmed_at").eq("email", email).execute()
 
                 if not response.data or response.data[0].get("confirmed_at") is None:
