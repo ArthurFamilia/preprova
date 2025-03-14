@@ -42,8 +42,8 @@ def login_page():
                 st.error("A senha deve ter pelo menos 6 caracteres.")
             else:
                 try:
-                    response = supabase.auth.sign_up({"email": email, "password": password})
-                    if hasattr(response, "user") and auth_response.user:
+                    signup_response = supabase.auth.sign_up({"email": email, "password": password})
+                    if hasattr(signup_response, "user") and signup_response.user:
                         st.success("Cadastro realizado com sucesso! Confirme seu e-mail antes de fazer login.")
                     else:
                         st.error("Erro ao cadastrar usuário. Tente outro email.")
