@@ -43,7 +43,7 @@ def login_page():
             else:
                 try:
                     response = supabase.auth.sign_up({"email": email, "password": password})
-                    if hasattr(response, "user") and response.user:
+                    if hasattr(response, "user") and auth_response.user:
                         st.success("Cadastro realizado com sucesso! Confirme seu e-mail antes de fazer login.")
                     else:
                         st.error("Erro ao cadastrar usuário. Tente outro email.")
