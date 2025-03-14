@@ -1,25 +1,33 @@
 import streamlit as st
+from config import SUPABASE_URL, SUPABASE_KEY
+from supabase import create_client
 
-def login_page(supabase):
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def login_page():
     st.title("Pre Prova Medicina")
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        st.image("logo.jpg", width=341)
-    with col2:
-        st.markdown("<h3>Sua Inteligência, nossa IA, rumo ao seu jaleco branco.</h3>", unsafe_allow_html=True)
-    
+
     login_option = st.radio("Escolha uma opção:", ("Login", "Cadastro"))
     email = st.text_input("Email")
     password = st.text_input("Senha", type="password")
-    
+
     if login_option == "Login":
         if st.button("Entrar"):
             try:
-                response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                if hasattr(response, "user") and response.user:
+                # Verifica se o e-mail está confirmado na tabela confirmed_users
+                response = supabase.table("confirmed_users").select("email").eq("email", email).execute()
+                
+                if not response.data:
+                    st.error("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.")
+                    return
+                
+                # Se estiver confirmado, tenta fazer login
+                auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                
+                if hasattr(auth_response, "user") and auth_response.user:
                     st.session_state["logged_in"] = True
                     st.session_state["user_email"] = email
-                    st.rerun()
+                    st.experimental_rerun()
                 else:
                     st.error("Email ou senha incorretos.")
             except Exception as e:
@@ -27,7 +35,7 @@ def login_page(supabase):
                     st.error("Usuário não cadastrado ou senha incorreta. Tente novamente ou cadastre-se.")
                 else:
                     st.error(f"Erro no login: {str(e)}")
-    
+
     else:  # Cadastro
         if st.button("Cadastrar"):
             if len(password) < 6:
@@ -36,7 +44,7 @@ def login_page(supabase):
                 try:
                     response = supabase.auth.sign_up({"email": email, "password": password})
                     if hasattr(response, "user") and response.user:
-                        st.success("Cadastro realizado com sucesso! Faça login.")
+                        st.success("Cadastro realizado com sucesso! Confirme seu e-mail antes de fazer login.")
                     else:
                         st.error("Erro ao cadastrar usuário. Tente outro email.")
                 except Exception as e:
