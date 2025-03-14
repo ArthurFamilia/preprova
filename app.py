@@ -12,13 +12,14 @@ def init_connection():
 
 def main():
     st.set_page_config(page_title="Pre Prova Medicina", layout="wide")
+    
     supabase = init_connection()
     
     if "logged_in" not in st.session_state:
         st.session_state["logged_in"] = False
     
     if not st.session_state["logged_in"]:
-        login.login_page(supabase)
+        login.login_page()  # Removido argumento supabase, pois ele já é inicializado no login.py
     else:
         home.home_page()
 
