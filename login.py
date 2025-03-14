@@ -14,17 +14,19 @@ def login_page():
     if login_option == "Login":
         if st.button("Entrar"):
             try:
-                # Verifica se o e-mail foi confirmado na auth.users
-                response = supabase.table("auth.users").select("confirmed_at").eq("email", email).execute()
-
-                if not response.data or response.data[0].get("confirmed_at") is None:
-                    st.error("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.")
-                    return
-
-                # Se estiver confirmado, tenta fazer login
+                # Faz login
                 auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
 
+                # Se o login foi bem-sucedido, obtém o usuário autenticado
                 if hasattr(auth_response, "user") and auth_response.user:
+                    user_data = supabase.auth.get_user()
+                    
+                    # Verifica se o e-mail foi confirmado
+                    if not user_data.user.email_confirmed_at:
+                        st.error("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.")
+                        return
+
+                    # Login autorizado
                     st.session_state["logged_in"] = True
                     st.session_state["user_email"] = email
                     st.experimental_rerun()
