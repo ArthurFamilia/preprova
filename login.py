@@ -19,7 +19,7 @@ def login_page(supabase):
                 if hasattr(response, "user") and response.user:
                     st.session_state["logged_in"] = True
                     st.session_state["user_email"] = email
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error("Email ou senha incorretos.")
             except Exception as e:
