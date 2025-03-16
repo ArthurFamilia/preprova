@@ -23,7 +23,8 @@ def generate_questions(preprova_id, pdf_url):
     text = extract_text_from_pdf(pdf_url)
     if not text:
         return None
-
+        
+    st.write("cp 1")
     prompt = f"Crie 5 perguntas no formato flashcards com base neste texto:\n{text[:2000]}"  # Limitamos a 2000 caracteres
 
     response = openai.ChatCompletion.create(
@@ -31,7 +32,7 @@ def generate_questions(preprova_id, pdf_url):
         messages=[{"role": "system", "content": "Você é um criador de flashcards para estudo médico."},
                   {"role": "user", "content": prompt}]
     )
-
+    st.write("cp 2")
     if response:
         questions = [msg["content"] for msg in response["choices"]]
         
@@ -40,4 +41,6 @@ def generate_questions(preprova_id, pdf_url):
             supabase.table("questoes").insert({"preprova_id": preprova_id, "pergunta": pergunta}).execute()
 
         return True
-    return False
+    else:
+        st.write("cp 3")
+        return False
