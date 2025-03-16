@@ -14,10 +14,9 @@ def login_page():
     if login_option == "Login":
         if st.button("Entrar"):
             try:
-                # Faz login
+                # Tenta autenticar o usuário
                 auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
 
-                # Se o login foi bem-sucedido, obtém o usuário autenticado
                 if hasattr(auth_response, "user") and auth_response.user:
                     user_data = supabase.auth.get_user()
                     
@@ -45,14 +44,19 @@ def login_page():
                 return
             
             try:
-                # 🔹 Verifica se o email já existe antes de cadastrar
-                existing_user = supabase.table("auth.users").select("id").eq("email", email).execute()
+                # 🔹 Tenta autenticar o usuário antes de cadastrar
+                auth_response = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 
-                if existing_user.data:
+                if hasattr(auth_response, "user") and auth_response.user:
                     st.error("Este e-mail já está cadastrado. Tente outro ou faça login.")
                     return
 
-                # Criar usuário no Supabase
+            except Exception as e:
+                if "Invalid login credentials" in str(e):
+                    pass  # Se credenciais forem inválidas, significa que o usuário não existe ainda
+
+            # Criar usuário no Supabase
+            try:
                 signup_response = supabase.auth.sign_up({"email": email, "password": password})
                 
                 if hasattr(signup_response, "user") and signup_response.user:
@@ -61,4 +65,7 @@ def login_page():
                     st.error("Erro ao cadastrar usuário. Tente outro email.")
 
             except Exception as e:
-                st.error(f"Erro no cadastro: {str(e)}")
+                if "User already registered" in str(e):
+                    st.error("Este e-mail já está cadastrado. Tente outro ou faça login.")
+                else:
+                    st.error(f"Erro no cadastro: {str(e)}")
