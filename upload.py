@@ -108,6 +108,7 @@ def upload_pdf():
                 # 🔍 **Aguarda 10 segundos antes de acessar o arquivo**
                 st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
                 time.sleep(10)
+                st.write(pdf_url)
 
                 # 🔍 **Verifica se a URL está acessível**
                 try:
@@ -128,11 +129,6 @@ def upload_pdf():
                 except Exception as e:
                     st.error(f"❌ DEBUG - Erro ao verificar permissões da tabela preprovas: {str(e)}")
                     
-                #rod debug
-                st.write(f"📂 DEBUG - Caminho Completo no Supabase: {file_path}")
-                st.write(f"📂 DEBUG - Caminho Corrigido no Supabase: {cleaned_file_path}")
-                st.write(f"🔗 DEBUG - URL Final Corrigida: {pdf_url}")
-                
                 # 🔹 Insere no banco de dados
                 st.write("📊 **rod DEBUG - Tentando inserir na tabela preprovas**")
                 st.write(f"📊 **DEBUG - user_id:** {user_id}")
