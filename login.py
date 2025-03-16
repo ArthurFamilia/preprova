@@ -42,12 +42,23 @@ def login_page():
         if st.button("Cadastrar"):
             if len(password) < 6:
                 st.error("A senha deve ter pelo menos 6 caracteres.")
-            else:
-                try:
-                    signup_response = supabase.auth.sign_up({"email": email, "password": password})
-                    if hasattr(signup_response, "user") and signup_response.user:
-                        st.success("Cadastro realizado com sucesso! Confirme seu e-mail antes de fazer login.")
-                    else:
-                        st.error("Erro ao cadastrar usuário. Tente outro email.")
-                except Exception as e:
-                    st.error(f"Erro no cadastro: {str(e)}")
+                return
+            
+            try:
+                # 🔹 Verifica se o email já existe antes de cadastrar
+                existing_user = supabase.table("auth.users").select("id").eq("email", email).execute()
+                
+                if existing_user.data:
+                    st.error("Este e-mail já está cadastrado. Tente outro ou faça login.")
+                    return
+
+                # Criar usuário no Supabase
+                signup_response = supabase.auth.sign_up({"email": email, "password": password})
+                
+                if hasattr(signup_response, "user") and signup_response.user:
+                    st.success("Cadastro realizado com sucesso! Confirme seu e-mail antes de fazer login.")
+                else:
+                    st.error("Erro ao cadastrar usuário. Tente outro email.")
+
+            except Exception as e:
+                st.error(f"Erro no cadastro: {str(e)}")
