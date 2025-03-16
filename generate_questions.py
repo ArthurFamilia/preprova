@@ -6,9 +6,9 @@ import streamlit as st
 import time
 import re
 
-# Inicializa os clientes
+# ✅ Inicializa os clientes
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-openai.api_key = OPENAI_KEY
+client = openai.OpenAI(api_key=OPENAI_KEY)  # ✅ Corrigido: Agora client está corretamente definido
 
 def extract_text_from_pdf(pdf_url):
     """Baixa o PDF do Supabase e extrai o texto."""
