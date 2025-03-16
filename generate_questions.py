@@ -21,7 +21,7 @@ def extract_text_from_pdf(pdf_url):
 
 def generate_questions(preprova_id, pdf_url):
     """Gera questões com base no texto do PDF usando OpenAI."""
-    st.write("cp 0")
+    st.write("cp 0" + pdf_url)
     text = extract_text_from_pdf(pdf_url)
     if not text:
         return None
