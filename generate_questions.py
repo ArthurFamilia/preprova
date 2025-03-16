@@ -65,41 +65,26 @@ def extract_text_from_pdf(pdf_url):
         return None
 
 def generate_questions(preprova_id, pdf_url):
-    """Gera questões com base no texto do PDF usando OpenAI."""
-    
     st.write("📂 DEBUG - Iniciando geração de questões.")
-
-    # 🔹 Extração de texto corrigida
     pdf_text = extract_text_from_pdf(pdf_url)
-
     if not pdf_text:
         st.error("❌ DEBUG - Nenhum texto extraído do PDF. Abortando geração de questões.")
         return False
     
-    # st.write("📂 DEBUG - Criando prompt para OpenAI.")
-
-    # 🔹 Limita a 2000 caracteres para evitar estouro de contexto
     prompt = f"Crie 5 perguntas no formato flashcards com base neste texto:\n{pdf_text[:2000]}"
-
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[{"role": "system", "content": "Você é um criador de flashcards para estudo médico."},
-                      {"role": "user", "content": prompt}]
+            messages=[
+                {"role": "system", "content": "Você é um criador de flashcards para estudo médico."},
+                {"role": "user", "content": prompt}
+            ]
         )
-
-        if response and "choices" in response:
-            questions = [choice["message"]["content"] for choice in response["choices"]]
-
-            # 🔹 Insere as perguntas na tabela `questoes`
-            for pergunta in questions:
-                supabase.table("questoes").insert({"preprova_id": preprova_id, "pergunta": pergunta}).execute()
-
-            st.success("✅ DEBUG - Questões geradas e armazenadas com sucesso.")
-            return True
-        else:
-            st.error("❌ DEBUG - Erro na resposta da OpenAI.")
-            return False
+        questions = [choice.message.content for choice in response.choices]
+        for pergunta in questions:
+            supabase.table("questoes").insert({"preprova_id": preprova_id, "pergunta": pergunta}).execute()
+        st.success("✅ DEBUG - Questões geradas e armazenadas com sucesso.")
+        return True
     except Exception as e:
         st.error(f"❌ DEBUG - Erro ao gerar perguntas com OpenAI: {str(e)}")
         return False
