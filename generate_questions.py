@@ -3,7 +3,7 @@ import fitz  # PyMuPDF para extrair texto do PDF
 from supabase import create_client
 from config import SUPABASE_URL, SUPABASE_KEY, OPENAI_KEY
 import streamlit as st
-import re
+import time
 
 # Inicializa os clientes
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -13,13 +13,32 @@ def extract_text_from_pdf(pdf_url):
     """Baixa o PDF do Supabase e extrai o texto."""
     
     st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
-    
-    # 🔹 Corrige o caminho do arquivo para download (extrai apenas o nome)
-    pdf_file_name = pdf_url.split("/")[-1]  # Pega apenas "arquivo.pdf"
-    file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho correto dentro do bucket
-    
+
+    # 🔹 Obtém o nome do arquivo da URL
+    pdf_file_name = pdf_url.split("/")[-1]  # Exemplo: "123456_teste.pdf"
+    file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho esperado no bucket
+
+    # 🔹 Aguarda 5 segundos para garantir que o Supabase processe o upload
+    st.write("⏳ DEBUG - Aguardando 5 segundos antes do download...")
+    time.sleep(5)
+
+    # 🔹 Verifica se o arquivo realmente existe antes de tentar baixar
+    try:
+        existing_files = supabase.storage.from_("pdfs").list()
+        existing_file_names = [file["name"] for file in existing_files]
+
+        if pdf_file_name not in existing_file_names:
+            st.error(f"❌ DEBUG - O arquivo '{pdf_file_name}' não foi encontrado no bucket!")
+            st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
+            return None
+    except Exception as e:
+        st.error(f"❌ DEBUG - Erro ao listar arquivos do Supabase: {str(e)}")
+        return None
+
+    # 🔹 Faz o download do arquivo
     try:
         response = supabase.storage.from_("pdfs").download(file_path_in_bucket)
+
         if response is None:
             st.error(f"❌ DEBUG - Erro ao baixar o PDF do Supabase: {file_path_in_bucket} não encontrado.")
             return None
@@ -38,8 +57,8 @@ def generate_questions(preprova_id, pdf_url):
     """Gera questões com base no texto do PDF usando OpenAI."""
     
     st.write("📂 DEBUG - Iniciando geração de questões.")
-    
-    # 🔹 Corrige a URL antes da extração do texto
+
+    # 🔹 Extração de texto corrigida
     pdf_text = extract_text_from_pdf(pdf_url)
 
     if not pdf_text:
