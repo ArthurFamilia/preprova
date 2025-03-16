@@ -14,30 +14,34 @@ def extract_text_from_pdf(pdf_url):
 
     st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
 
-    # 🔹 Obtém apenas o nome do arquivo a partir da URL
-    pdf_file_name = pdf_url.split("/")[-1]  # Exemplo: "1742149122_teste1.pdf"
-    file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho correto no bucket
+    # 🔹 Remove barras duplas se existirem na URL
+    pdf_url = pdf_url.replace("//", "/")
 
-    # 🔹 Aguarda 5 segundos para garantir que o Supabase processe o upload
-    st.write("⏳ DEBUG - Aguardando 5 segundos antes do download...")
-    time.sleep(5)
+    # 🔹 Obtém o caminho do arquivo do bucket (sem a URL base)
+    file_path_in_bucket = pdf_url.replace(f"{SUPABASE_URL}/storage/v1/object/public/pdfs/", "")
 
-    # 🔹 Lista arquivos disponíveis no bucket para debug
+    st.write(f"📂 DEBUG - Caminho absoluto do arquivo: {file_path_in_bucket}")
+
+    # 🔹 Aguarda 10 segundos para garantir que o Supabase processe o upload
+    st.write("⏳ DEBUG - Aguardando 10 segundos antes do download...")
+    time.sleep(10)
+
+    # 🔹 Lista arquivos disponíveis no bucket para depuração
     try:
         existing_files = supabase.storage.from_("pdfs").list()
         existing_file_names = [file["name"] for file in existing_files]
 
         st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
-        st.write(f"📂 DEBUG - Tentando baixar o arquivo com caminho: {file_path_in_bucket}")
 
-        if pdf_file_name not in existing_file_names:
-            st.error(f"❌ DEBUG - O arquivo '{pdf_file_name}' não foi encontrado no bucket!")
+        # 🔹 Verifica se o arquivo realmente existe no bucket antes de tentar baixar
+        if file_path_in_bucket not in existing_file_names:
+            st.error(f"❌ DEBUG - O arquivo '{file_path_in_bucket}' NÃO FOI ENCONTRADO no bucket!")
             return None
     except Exception as e:
         st.error(f"❌ DEBUG - Erro ao listar arquivos do Supabase: {str(e)}")
         return None
 
-    # 🔹 Tenta baixar o arquivo **usando o caminho correto no bucket**
+    # 🔹 Tenta baixar o arquivo usando o caminho correto
     try:
         response = supabase.storage.from_("pdfs").download(file_path_in_bucket)
 
@@ -45,7 +49,7 @@ def extract_text_from_pdf(pdf_url):
             st.error(f"❌ DEBUG - Erro ao baixar o PDF do Supabase: {file_path_in_bucket} não encontrado.")
             return None
 
-        st.write(f"✅ DEBUG - Arquivo {pdf_file_name} baixado com sucesso.")
+        st.write(f"✅ DEBUG - Arquivo baixado com sucesso.")
 
         # 🔹 Lendo o conteúdo do PDF
         with fitz.open(stream=response, filetype="pdf") as doc:
