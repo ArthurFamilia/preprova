@@ -109,12 +109,11 @@ def upload_pdf():
                 st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
                 time.sleep(10)
                 st.write(nova_url)
-                st.write("1")
+
 
                 # 🔍 **Verifica se a URL está acessível**
                
                 try:
-                    st.write("2")
                     response = request.urlopen(nova_url)
                     if response.status == 200:
                         st.write("3")
@@ -143,17 +142,18 @@ def upload_pdf():
                 response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": nova_url}).execute()
 
                 st.write(f"📊 DEBUG - Resposta do INSERT: {response}")
-
+                st.write("1")
                 if response.data:
+                    st.write("2")
                     preprova_id = response.data[0]["id"]
                     st.session_state["preprova_id"] = preprova_id
                     st.success("✅ PDF carregado com sucesso! Gerando sua pré-prova...")
 
                     # 🔹 Chama a API da OpenAI para gerar perguntas automaticamente
                     with st.spinner("📝 Gerando questões... Isso pode levar alguns segundos."):
-
+                        st.write("3")
                         success = generate_questions.generate_questions(preprova_id, nova_url)
-
+                        st.write("4")
                         if success:
                             st.success("🎉 Questões geradas com sucesso! Acesse sua pré-prova.")
                             st.rerun()
