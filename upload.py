@@ -48,7 +48,7 @@ def upload_pdf():
                 
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"pdfs/{timestamp}_{safe_file_name}"
+                file_path = f"pdfs/pdfs/{timestamp}_{safe_file_name}"  # <== Corrigido para garantir "pdfs/pdfs/"
 
                 # 🔍 **Verificação do Bucket**
                 st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
@@ -85,24 +85,9 @@ def upload_pdf():
                     return
                 
                 # 🔹 Corrige a URL gerada para o Supabase
-                # 🔹 Corrige a URL gerada para o Supabase sem duplicação do "pdfs/"
-                #if "pdfs/pdfs/" in storage_response.full_path:
-                #    corrected_path = storage_response.full_path.replace("pdfs/pdfs/", "pdfs/")
-                #else:
-                #     corrected_path = storage_response.full_path
-                corrected_path = storage_response.full_path
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"  # <== Corrigido para manter estrutura correta
                 
-                # 🔍 **Debug da URL corrigida**
-                st.write(f"📂 DEBUG - Caminho Corrigido do Arquivo no Supabase: {corrected_path}")
-                
-                # 🔹 Gera a URL final correta
-                encoded_file_path = parse.quote(corrected_path, safe='')
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{encoded_file_path}"
-                
-                st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
-                st.write(f"🔗 **DEBUG - URL Final Corrigida:** {pdf_url}")
-
-                
+                # 🔍 **Debug da URL final**
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
 
@@ -110,7 +95,6 @@ def upload_pdf():
                 st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
                 time.sleep(10)
                 st.write(pdf_url)
-
 
                 # 🔍 **Verifica se a URL está acessível**
                 st.write("rod 1: " + pdf_url )
