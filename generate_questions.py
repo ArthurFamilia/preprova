@@ -44,7 +44,7 @@ def extract_text_from_pdf(pdf_url):
 
     # 🔹 Tenta baixar o arquivo usando apenas o nome correto do arquivo
     try:
-        st.write(f"📂 DEBUG - Tentando baixar o arquivo com caminho correto: {file_path_in_bucket}")
+        # st.write(f"📂 DEBUG - Tentando baixar o arquivo com caminho correto: {file_path_in_bucket}")
 
         response = supabase.storage.from_("pdfs").download(file_path_in_bucket)
 
@@ -76,7 +76,7 @@ def generate_questions(preprova_id, pdf_url):
         st.error("❌ DEBUG - Nenhum texto extraído do PDF. Abortando geração de questões.")
         return False
     
-    st.write("📂 DEBUG - Criando prompt para OpenAI.")
+    # st.write("📂 DEBUG - Criando prompt para OpenAI.")
 
     # 🔹 Limita a 2000 caracteres para evitar estouro de contexto
     prompt = f"Crie 5 perguntas no formato flashcards com base neste texto:\n{pdf_text[:2000]}"
