@@ -162,4 +162,4 @@ def upload_pdf():
                 else:
                     st.error("❌ Erro ao criar pré-prova no banco de dados.")
             except Exception as e:
-                st.error(f"❌ **DEBUG - Erro no upload para o Supabase:** {str(e)}")
+                st.error(f"❌ **rod 1 - Erro no upload para o Supabase:** {str(e)}")
