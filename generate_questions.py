@@ -29,7 +29,7 @@ def extract_text_from_pdf(pdf_url):
         st.write("rod 4.1 ")
         existing_file_names = [file["name"] for file in existing_files]
         st.write("rod 5: " + pdf_file_name)
-        st.write("rod 6: " + existing_file_names)
+
         if pdf_file_name not in existing_file_names:
             st.error(f"❌ DEBUG - O arquivo '{pdf_file_name}' não foi encontrado no bucket!")
             st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
