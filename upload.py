@@ -2,6 +2,7 @@ import streamlit as st
 from supabase import create_client
 from config import SUPABASE_URL, SUPABASE_KEY
 import generate_questions  # Importa a função de geração de questões
+import time
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -17,12 +18,17 @@ def upload_pdf():
 
         with st.spinner("Carregando PDF..."):
             try:
-                # 🔹 Lê o arquivo como bytes diretamente
-                file_bytes = uploaded_file.getvalue()
-                file_path = f"pdfs/{uploaded_file.name}"  # Define o caminho no Supabase Storage
+                # 🔹 Adiciona timestamp ao nome do arquivo para evitar conflito de nomes
+                timestamp = int(time.time())  
+                file_path = f"pdfs/{timestamp}_{uploaded_file.name}"
 
-                # Envia para o Supabase Storage
-                storage_response = supabase.storage.from_("pdfs").upload(file_path, file_bytes, file_options={"upsert": True}, headers={"content-type": "application/pdf"})
+                # Lê o arquivo como bytes
+                file_bytes = uploaded_file.getvalue()
+
+                # 🔹 Faz o upload para o Supabase Storage sem `headers`
+                storage_response = supabase.storage.from_("pdfs").upload(
+                    file_path, file_bytes, file_options={"upsert": True}
+                )
             
                 if not storage_response:
                     st.error("Erro ao fazer upload do arquivo. Verifique se o bucket existe e se há permissões suficientes.")
