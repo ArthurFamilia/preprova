@@ -16,7 +16,6 @@ def upload_pdf():
     # 🔍 **Verificação de Usuário**
     user_id = st.session_state.get("user_id")
 
-    # Se `user_id` não estiver na sessão, tenta buscar novamente
     if not user_id:
         try:
             user_data = supabase.auth.get_user()
@@ -48,14 +47,13 @@ def upload_pdf():
                 
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"{timestamp}_{safe_file_name}"
+                file_path = f"pdfs/{timestamp}_{safe_file_name}"
 
                 # 🔍 **Verificação do Bucket**
                 st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
                 try:
                     bucket_list = supabase.storage.list_buckets()
                     bucket_names = [bucket.id for bucket in bucket_list]
-
                     st.write(f"📂 DEBUG - Buckets Disponíveis: {bucket_names}")
 
                     if "pdfs" not in bucket_names:
@@ -73,47 +71,38 @@ def upload_pdf():
                 # 🔍 **Debug do Caminho**
                 st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path}")
                 
-                # 🔹 Faz o upload para o Supabase Storage garantindo que o bucket seja "pdfs"
+                # 🔹 Faz o upload para o Supabase Storage
                 with open(temp_file_path, "rb") as file_data:
-                    storage_response = supabase.storage.from_("pdfs").upload(f"pdfs/{file_path}", file_data)
-                
+                    storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data)
+
                 # 🔍 **Verificação do Upload**
                 st.write(f"📤 DEBUG - Resposta do Upload: {storage_response}")
-                
+
                 if not storage_response:
                     st.error("❌ **DEBUG - O arquivo pode não ter sido enviado corretamente.**")
                     return
-                    
-                # 🔹 Gera a URL final correta garantindo que o arquivo está no path correto
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{file_path}"
                 
-                st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
-                st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
+                # 🔹 Gera a URL final garantindo que o formato seja correto
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
                 
-                # 🔹 Corrige a URL gerada para o Supabase
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{file_path}"  # <== Corrigido para manter estrutura correta
-                pdf_url = pdf_url.replace("pdfs/pdfs/", "pdfs/")
-                
+                # 🔹 Corrige barras duplicadas "//"
+                pdf_url = pdf_url.replace(":/", "://").replace("//storage", "/storage")
+
                 # 🔍 **Debug da URL final**
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
-                st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
+                st.write(f"🔗 **DEBUG - URL Final Corrigida:** {pdf_url}")
 
                 # 🔍 **Aguarda 10 segundos antes de acessar o arquivo**
                 st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
                 time.sleep(10)
-                st.write(pdf_url)
 
                 # 🔍 **Verifica se a URL está acessível**
-                st.write("rod 1: " + pdf_url )
                 try:
                     response = request.urlopen(pdf_url)
                     if response.status == 200:
-                        st.write("3")
                         st.write("✅ **DEBUG - O arquivo está acessível no Supabase.**")
                     else:
-                        st.write("4")
-                        st.write("response.status")
-                        raise Exception("Erro ao acessar o arquivo no Supabase Storage.")
+                        raise Exception(f"Erro ao acessar o arquivo no Supabase Storage. Código: {response.status}")
                 except Exception as e:
                     st.error(f"❌ **DEBUG - Erro ao acessar o PDF no Supabase:** {str(e)}")
                     return
@@ -127,25 +116,21 @@ def upload_pdf():
                     st.error(f"❌ DEBUG - Erro ao verificar permissões da tabela preprovas: {str(e)}")
                     
                 # 🔹 Insere no banco de dados
-                st.write("📊 **rod DEBUG - Tentando inserir na tabela preprovas**")
+                st.write("📊 **DEBUG - Tentando inserir na tabela preprovas**")
                 st.write(f"📊 **DEBUG - user_id:** {user_id}")
                 st.write(f"📊 **DEBUG - pdf_url:** {pdf_url}")
 
                 response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
-
                 st.write(f"📊 DEBUG - Resposta do INSERT: {response}")
-                st.write("1")
+
                 if response.data:
-                    st.write("2")
                     preprova_id = response.data[0]["id"]
                     st.session_state["preprova_id"] = preprova_id
                     st.success("✅ PDF carregado com sucesso! Gerando sua pré-prova...")
 
                     # 🔹 Chama a API da OpenAI para gerar perguntas automaticamente
                     with st.spinner("📝 Gerando questões... Isso pode levar alguns segundos."):
-                        st.write("3")
                         success = generate_questions.generate_questions(preprova_id, pdf_url)
-                        st.write("4")
                         if success:
                             st.success("🎉 Questões geradas com sucesso! Acesse sua pré-prova.")
                             st.rerun()
@@ -154,4 +139,4 @@ def upload_pdf():
                 else:
                     st.error("❌ Erro ao criar pré-prova no banco de dados.")
             except Exception as e:
-                st.error(f"❌ **rod 1 - Erro no upload para o Supabase:** {str(e)}")
+                st.error(f"❌ **DEBUG - Erro no upload para o Supabase:** {str(e)}")
