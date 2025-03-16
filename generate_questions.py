@@ -11,34 +11,32 @@ openai.api_key = OPENAI_KEY
 
 def extract_text_from_pdf(pdf_url):
     """Baixa o PDF do Supabase e extrai o texto."""
-    
+
     st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
 
-    # 🔹 Obtém o nome do arquivo da URL
+    # 🔹 Obtém apenas o nome do arquivo da URL (remove o bucket)
     pdf_file_name = pdf_url.split("/")[-1]  # Exemplo: "123456_teste.pdf"
-    file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho esperado no bucket
+    file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho no bucket
 
     # 🔹 Aguarda 5 segundos para garantir que o Supabase processe o upload
     st.write("⏳ DEBUG - Aguardando 5 segundos antes do download...")
     time.sleep(5)
 
-    # 🔹 Verifica se o arquivo realmente existe antes de tentar baixar
+    # 🔹 Lista arquivos disponíveis no bucket para debug
     try:
-        st.write("rod 4: ")
         existing_files = supabase.storage.from_("pdfs").list()
-        st.write("rod 4.1 ")
         existing_file_names = [file["name"] for file in existing_files]
-        st.write("rod 5: " + pdf_file_name)
+
+        st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
 
         if pdf_file_name not in existing_file_names:
             st.error(f"❌ DEBUG - O arquivo '{pdf_file_name}' não foi encontrado no bucket!")
-            st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
             return None
     except Exception as e:
         st.error(f"❌ DEBUG - Erro ao listar arquivos do Supabase: {str(e)}")
         return None
 
-    # 🔹 Faz o download do arquivo
+    # 🔹 Tenta baixar o arquivo
     try:
         response = supabase.storage.from_("pdfs").download(file_path_in_bucket)
 
