@@ -14,9 +14,9 @@ def extract_text_from_pdf(pdf_url):
 
     st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
 
-    # 🔹 Obtém apenas o nome do arquivo da URL (remove o bucket)
-    pdf_file_name = pdf_url.split("/")[-1]  # Exemplo: "123456_teste.pdf"
-    file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho no bucket
+    # 🔹 Obtém apenas o nome do arquivo da URL (remove o Supabase URL)
+    pdf_file_name = pdf_url.split("/")[-1]  # Exemplo: "1742136523_t.pdf"
+    file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho correto no bucket
 
     # 🔹 Aguarda 5 segundos para garantir que o Supabase processe o upload
     st.write("⏳ DEBUG - Aguardando 5 segundos antes do download...")
@@ -36,7 +36,7 @@ def extract_text_from_pdf(pdf_url):
         st.error(f"❌ DEBUG - Erro ao listar arquivos do Supabase: {str(e)}")
         return None
 
-    # 🔹 Tenta baixar o arquivo
+    # 🔹 Tenta baixar o arquivo **usando o caminho correto**
     try:
         response = supabase.storage.from_("pdfs").download(file_path_in_bucket)
 
