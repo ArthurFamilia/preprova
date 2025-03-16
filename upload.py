@@ -5,6 +5,7 @@ import generate_questions  # Importa a função de geração de questões
 import time
 import re
 
+# Inicializa o cliente Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def upload_pdf():
@@ -29,11 +30,11 @@ def upload_pdf():
 
         with st.spinner("Carregando PDF..."):
             try:
-                # Nome do arquivo com timestamp para evitar conflito
-                # Remove espaços e caracteres especiais do nome do arquivo
+                # 🔹 Remove espaços e caracteres especiais do nome do arquivo
                 safe_file_name = re.sub(r'\s+', '_', uploaded_file.name)
-
-                # Adiciona timestamp para evitar duplicação
+                safe_file_name = re.sub(r'[^\w\-.]', '', safe_file_name)  # Remove caracteres especiais
+                
+                # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
                 file_path = f"pdfs/{timestamp}_{safe_file_name}"  
 
@@ -52,13 +53,24 @@ def upload_pdf():
                 # 🔹 Faz o upload para o Supabase Storage
                 storage_response = supabase.storage.from_("pdfs").upload(file_path, file_bytes)
 
-                if not storage_response:
+                # 🔹 Confirma se o upload foi bem-sucedido
+                if storage_response is None:
                     st.error("Erro ao fazer upload do arquivo. Verifique se o bucket existe e se há permissões suficientes.")
                     return
+                
+                # 🔹 Obtém URL do arquivo e confirma se ele está acessível
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{timestamp}_{safe_file_name}"
+                st.write(f"📄 PDF armazenado: [{safe_file_name}]({pdf_url})")
 
-                # 🔹 Obtém URL do arquivo
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
-                st.write(f"📄 PDF armazenado: [{uploaded_file.name}]({pdf_url})")
+                # 🔹 Testa se o link realmente existe (simula um acesso)
+                from urllib import request
+                try:
+                    response = request.urlopen(pdf_url)
+                    if response.status != 200:
+                        raise Exception("Erro ao acessar o arquivo no Supabase Storage.")
+                except Exception as e:
+                    st.error(f"Erro ao acessar o PDF no Supabase: {str(e)}")
+                    return
 
                 # 🔹 Criar uma pré-prova vinculada ao usuário logado
                 response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
