@@ -22,7 +22,7 @@ def upload_pdf():
                 file_path = f"pdfs/{uploaded_file.name}"  # Define o caminho no Supabase Storage
 
                 # Envia para o Supabase Storage
-                storage_response = supabase.storage.from_("pdfs").upload(file_path, file_bytes, {"content-type": "application/pdf", "upsert": True})
+                storage_response = supabase.storage.from_("pdfs").upload(file_path, file_bytes, file_options={"upsert": True}, headers={"content-type": "application/pdf"})
             
                 if not storage_response:
                     st.error("Erro ao fazer upload do arquivo. Verifique se o bucket existe e se há permissões suficientes.")
