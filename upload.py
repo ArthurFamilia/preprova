@@ -127,9 +127,14 @@ def upload_pdf():
                     st.write(f"🔍 DEBUG - Permissões INSERT na tabela preprovas: {perm_query}")
                 except Exception as e:
                     st.error(f"❌ DEBUG - Erro ao verificar permissões da tabela preprovas: {str(e)}")
-
+                    
+                #rod debug
+                st.write(f"📂 DEBUG - Caminho Completo no Supabase: {file_path}")
+                st.write(f"📂 DEBUG - Caminho Corrigido no Supabase: {cleaned_file_path}")
+                st.write(f"🔗 DEBUG - URL Final Corrigida: {pdf_url}")
+                
                 # 🔹 Insere no banco de dados
-                st.write("📊 **DEBUG - Tentando inserir na tabela preprovas**")
+                st.write("📊 **rod DEBUG - Tentando inserir na tabela preprovas**")
                 st.write(f"📊 **DEBUG - user_id:** {user_id}")
                 st.write(f"📊 **DEBUG - pdf_url:** {pdf_url}")
 
