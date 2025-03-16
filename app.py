@@ -37,7 +37,7 @@ def main():
         preprova.preprova_page()
     elif menu == "Sair":
         st.session_state.clear()
-        st.experimental_rerun()
+        st.rerun()
 
 if __name__ == "__main__":
     main()
