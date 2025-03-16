@@ -83,7 +83,7 @@ def generate_questions(preprova_id, pdf_url):
 
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "system", "content": "Você é um criador de flashcards para estudo médico."},
                       {"role": "user", "content": prompt}]
         )
