@@ -69,20 +69,26 @@ def upload_pdf():
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
                     temp_file.write(uploaded_file.getvalue())
                     temp_file_path = temp_file.name
-
+                
                 # 🔍 **Debug do Caminho**
                 st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path}")
-
-                # 🔹 Faz o upload para o Supabase Storage
+                
+                # 🔹 Faz o upload para o Supabase Storage garantindo que o bucket seja "pdfs"
                 with open(temp_file_path, "rb") as file_data:
-                    storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data.read())
-
+                    storage_response = supabase.storage.from_("pdfs").upload(f"pdfs/{file_path}", file_data)
+                
                 # 🔍 **Verificação do Upload**
                 st.write(f"📤 DEBUG - Resposta do Upload: {storage_response}")
-
+                
                 if not storage_response:
                     st.error("❌ **DEBUG - O arquivo pode não ter sido enviado corretamente.**")
                     return
+                    
+                # 🔹 Gera a URL final correta garantindo que o arquivo está no path correto
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{file_path}"
+                
+                st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
+                st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
                 
                 # 🔹 Corrige a URL gerada para o Supabase
                 pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{file_path}"  # <== Corrigido para manter estrutura correta
