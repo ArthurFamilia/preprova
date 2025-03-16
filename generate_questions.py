@@ -24,7 +24,9 @@ def extract_text_from_pdf(pdf_url):
 
     # 🔹 Verifica se o arquivo realmente existe antes de tentar baixar
     try:
+        st.write("rod 4: ")
         existing_files = supabase.storage.from_("pdfs").list()
+        st.write("rod 4.1 " + existing_files)
         existing_file_names = [file["name"] for file in existing_files]
         st.write("rod 5: " + pdf_file_name)
         st.write("rod 6: " + existing_file_names)
