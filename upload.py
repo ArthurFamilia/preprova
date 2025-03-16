@@ -1,6 +1,7 @@
 import streamlit as st
 from supabase import create_client
 from config import SUPABASE_URL, SUPABASE_KEY
+import generate_questions  # Importa a função de geração de questões
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -32,11 +33,20 @@ def upload_pdf():
                 response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
 
                 if response.data:
-                    st.success("PDF carregado com sucesso! Agora gere sua pré-prova.")
-                    st.session_state["preprova_id"] = response.data[0]["id"]
-                    st.experimental_rerun()
+                    preprova_id = response.data[0]["id"]
+                    st.session_state["preprova_id"] = preprova_id
+                    st.success("PDF carregado com sucesso! Gerando sua pré-prova...")
+
+                    # 🔹 Chama a API da OpenAI para gerar perguntas automaticamente
+                    with st.spinner("Gerando questões... Isso pode levar alguns segundos."):
+                        success = generate_questions.generate_questions(preprova_id, pdf_url)
+
+                        if success:
+                            st.success("Questões geradas com sucesso! Acesse sua pré-prova.")
+                            st.rerun()
+                        else:
+                            st.error("Erro ao gerar questões. Tente novamente.")
                 else:
                     st.error("Erro ao criar pré-prova.")
             else:
                 st.error("Usuário não autenticado.")
-
