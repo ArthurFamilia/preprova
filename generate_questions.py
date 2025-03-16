@@ -11,13 +11,11 @@ openai.api_key = OPENAI_KEY
 
 def extract_text_from_pdf(pdf_url):
     """Baixa o PDF do Supabase e extrai o texto."""
-    
+
     st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
 
-    # 🔹 Obtém apenas o nome do arquivo da URL (remove o Supabase URL)
-
-    pdf_file_name = pdf_url.split("/")[-1] 
-    #st.write(("a1" + pdf_file_name)
+    # 🔹 Obtém apenas o nome do arquivo a partir da URL
+    pdf_file_name = pdf_url.split("/")[-1]  # Exemplo: "1742148951_t.pdf"
     file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho correto no bucket
 
     # 🔹 Aguarda 5 segundos para garantir que o Supabase processe o upload
@@ -40,16 +38,13 @@ def extract_text_from_pdf(pdf_url):
 
     # 🔹 Tenta baixar o arquivo **usando o caminho correto no bucket**
     try:
-        st.write("rod 10")
         response = supabase.storage.from_("pdfs").download(file_path_in_bucket)
-        st.write("rod 11")
-        if response is None:
-            st.write("rod 12")
+
+        if not response:
             st.error(f"❌ DEBUG - Erro ao baixar o PDF do Supabase: {file_path_in_bucket} não encontrado.")
             return None
-        
+
         # 🔹 Lendo o conteúdo do PDF
-        st.write("rod 13")
         with fitz.open(stream=response, filetype="pdf") as doc:
             text = "\n".join([page.get_text("text") for page in doc])
         
