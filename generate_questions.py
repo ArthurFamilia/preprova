@@ -21,7 +21,7 @@ def extract_text_from_pdf(pdf_url):
     # 🔹 Obtém apenas o nome do arquivo do Supabase Storage
     file_path_in_bucket = pdf_url.replace(f"{SUPABASE_URL}/storage/v1/object/public/pdfs/", "")
 
-    st.write(f"📂 DEBUG - Caminho absoluto do arquivo salvo na tabela: {file_path_in_bucket}")
+    # st.write(f"📂 DEBUG - Caminho absoluto do arquivo salvo na tabela: {file_path_in_bucket}")
 
     # 🔹 Aguarda 10 segundos para garantir que o Supabase processe o upload
     st.write("⏳ DEBUG - Aguardando 10 segundos antes do download...")
@@ -32,7 +32,7 @@ def extract_text_from_pdf(pdf_url):
         existing_files = supabase.storage.from_("pdfs").list()
         existing_file_names = [file["name"] for file in existing_files]
 
-        st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
+        # st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
 
         # 🔹 Verifica se o arquivo realmente existe no bucket antes de tentar baixar
         if file_path_in_bucket not in existing_file_names:
@@ -52,13 +52,13 @@ def extract_text_from_pdf(pdf_url):
             st.error(f"❌ DEBUG - Erro ao baixar o PDF do Supabase: {file_path_in_bucket} não encontrado.")
             return None
 
-        st.write(f"✅ DEBUG - Arquivo baixado com sucesso.")
+        # st.write(f"✅ DEBUG - Arquivo baixado com sucesso.")
 
         # 🔹 Lendo o conteúdo do PDF
         with fitz.open(stream=response, filetype="pdf") as doc:
             text = "\n".join([page.get_text("text") for page in doc])
         
-        st.write("✅ DEBUG - Texto extraído com sucesso.")
+        # st.write("✅ DEBUG - Texto extraído com sucesso.")
         return text
     except Exception as e:
         st.error(f"❌ DEBUG - Erro ao extrair texto do PDF: {str(e)}")
