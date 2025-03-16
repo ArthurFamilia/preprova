@@ -4,6 +4,7 @@ from config import SUPABASE_URL, SUPABASE_KEY
 import generate_questions  # Importa a função de geração de questões
 import time
 import re
+import tempfile
 from urllib import request
 
 # Inicializa o cliente Supabase
@@ -39,20 +40,22 @@ def upload_pdf():
                 timestamp = int(time.time())  
                 file_path = f"pdfs/{timestamp}_{safe_file_name}"
 
-                # 🔹 Lê o arquivo como bytes
-                file_bytes = uploaded_file.getvalue()
+                # 🔹 Salva o arquivo temporariamente antes do upload
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                    temp_file.write(uploaded_file.getvalue())
+                    temp_file_path = temp_file.name
 
-                # 🔹 Verifica se o arquivo já existe no Supabase Storage
+                # 🔹 Verifica se o arquivo já existe no Supabase Storage e remove
                 existing_files = supabase.storage.from_("pdfs").list()
                 file_names = [f["name"] for f in existing_files]
 
                 for f in existing_files:
-                    if uploaded_file.name in f["name"]:
-                        # Remove o arquivo antigo antes de fazer upload
+                    if safe_file_name in f["name"]:
                         supabase.storage.from_("pdfs").remove(f["name"])
 
                 # 🔹 Faz o upload para o Supabase Storage
-                storage_response = supabase.storage.from_("pdfs").upload(file_path, file_bytes)
+                with open(temp_file_path, "rb") as file_data:
+                    storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data)
 
                 # 🔹 Confirma se o upload foi bem-sucedido
                 if storage_response is None:
@@ -60,7 +63,7 @@ def upload_pdf():
                     return
                 
                 # 🔹 Gera a URL correta do arquivo no Supabase
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{timestamp}_{safe_file_name}"
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
                 st.write(f"📄 PDF armazenado: {safe_file_name}")
 
                 # 🔹 Aguarda o Supabase processar o arquivo
