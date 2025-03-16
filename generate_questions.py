@@ -2,6 +2,7 @@ import openai
 import fitz  # PyMuPDF para extrair texto do PDF
 from supabase import create_client
 from config import SUPABASE_URL, SUPABASE_KEY, OPENAI_KEY
+import streamlit as st
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 openai.api_key = OPENAI_KEY
