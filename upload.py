@@ -111,8 +111,9 @@ def upload_pdf():
                 st.write(pdf_url)
 
                 # 🔍 **Verifica se a URL está acessível**
+                nova_url = pdf_url.replace('/pdfs%', '/pdfs/pdfs%')
                 try:
-                    response = request.urlopen(pdf_url)
+                    response = request.urlopen(nova_url)
                     if response.status == 200:
                         st.write("✅ **DEBUG - O arquivo está acessível no Supabase.**")
                     else:
