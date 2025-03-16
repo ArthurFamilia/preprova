@@ -3,6 +3,7 @@ from supabase import create_client
 from config import SUPABASE_URL, SUPABASE_KEY
 import generate_questions  # Importa a função de geração de questões
 import time
+import re
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -28,9 +29,13 @@ def upload_pdf():
 
         with st.spinner("Carregando PDF..."):
             try:
-                # 🔹 Nome do arquivo com timestamp para evitar conflito
+                # Nome do arquivo com timestamp para evitar conflito
+                # Remove espaços e caracteres especiais do nome do arquivo
+                safe_file_name = re.sub(r'\s+', '_', uploaded_file.name)
+
+                # Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"pdfs/{timestamp}_{uploaded_file.name}"  # Garante nome único
+                file_path = f"pdfs/{timestamp}_{safe_file_name}"  
 
                 # 🔹 Lê o arquivo como bytes
                 file_bytes = uploaded_file.getvalue()
