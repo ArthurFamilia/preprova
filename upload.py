@@ -16,7 +16,7 @@ def upload_pdf():
         st.error("Usuário não autenticado. Faça login novamente.")
         return
 
-    # 🔹 Log de depuração do usuário logado
+    # 🔹 Debug: Verificar usuário logado
     st.write("Debug User:", user_id)
 
     uploaded_file = st.file_uploader("Selecione um arquivo PDF", type="pdf")
@@ -28,12 +28,21 @@ def upload_pdf():
 
         with st.spinner("Carregando PDF..."):
             try:
-                # 🔹 Nome do arquivo com timestamp para evitar conflitos
+                # 🔹 Nome do arquivo com timestamp para evitar conflito
                 timestamp = int(time.time())  
-                file_path = f"pdfs/{uploaded_file.name}"  # 🔹 Garante que o arquivo será salvo no bucket correto
+                file_path = f"pdfs/{timestamp}_{uploaded_file.name}"  # Garante nome único
 
-                # Lê o arquivo como bytes
+                # 🔹 Lê o arquivo como bytes
                 file_bytes = uploaded_file.getvalue()
+
+                # 🔹 Verifica se o arquivo já existe no Supabase Storage
+                existing_files = supabase.storage.from_("pdfs").list()
+                file_names = [f["name"] for f in existing_files]
+
+                for f in existing_files:
+                    if uploaded_file.name in f["name"]:
+                        # Remove o arquivo antigo antes de fazer upload
+                        supabase.storage.from_("pdfs").remove(f["name"])
 
                 # 🔹 Faz o upload para o Supabase Storage
                 storage_response = supabase.storage.from_("pdfs").upload(file_path, file_bytes)
@@ -42,8 +51,9 @@ def upload_pdf():
                     st.error("Erro ao fazer upload do arquivo. Verifique se o bucket existe e se há permissões suficientes.")
                     return
 
-                # Obtém URL do arquivo
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{uploaded_file.name}"
+                # 🔹 Obtém URL do arquivo
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
+                st.write(f"📄 PDF armazenado: [{uploaded_file.name}]({pdf_url})")
 
                 # 🔹 Criar uma pré-prova vinculada ao usuário logado
                 response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
