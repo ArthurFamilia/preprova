@@ -14,7 +14,16 @@ def check_bucket():
     """ Verifica se o bucket `pdfs` existe e está acessível """
     try:
         response = supabase.storage.list_buckets()
-        bucket_names = [b["name"] for b in response.data]
+
+        # 🔹 Debug: Imprime toda a resposta bruta do Supabase para investigação
+        st.write("📂 **DEBUG - Resposta bruta do Supabase (Buckets):**", response)
+
+        # Se `response` for uma lista, extrair os nomes dos buckets corretamente
+        if isinstance(response, list):
+            bucket_names = [b["name"] for b in response]
+        else:
+            bucket_names = []  # Evita erro caso `response` não seja uma lista
+
         st.write("📂 **DEBUG - Buckets Disponíveis:**", bucket_names)
 
         if "pdfs" not in bucket_names:
@@ -24,6 +33,7 @@ def check_bucket():
     except Exception as e:
         st.error(f"❌ **DEBUG - Erro ao verificar bucket `pdfs`:** {str(e)}")
         return False
+
 
 def check_storage_files():
     """ Lista arquivos no bucket `pdfs` """
