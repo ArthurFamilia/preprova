@@ -19,9 +19,9 @@ def upload_pdf():
             # Envia para o Supabase Storage
             # Lê o arquivo em bytes
             file_bytes = uploaded_file.getvalue()
-
-           # Faz o upload para o Supabase Storage
-           storage_response = supabase.storage.from_("pdfs").upload(f"{uploaded_file.name}", file_bytes)
+            
+            # Faz o upload para o Supabase Storage
+            storage_response = supabase.storage.from_("pdfs").upload(f"{uploaded_file.name}", file_bytes)
             
             if not storage_response:
                 st.error("Erro ao fazer upload do arquivo.")
