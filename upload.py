@@ -5,7 +5,7 @@ import generate_questions  # Importa a função de geração de questões
 import time
 import re
 import tempfile
-from urllib import request
+from urllib import request, parse
 
 # Inicializa o cliente Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -82,8 +82,10 @@ def upload_pdf():
                     st.error("❌ **DEBUG - O arquivo pode não ter sido enviado corretamente.**")
                     return
                 
-                # 🔹 Corrige a URL gerada para o Supabase
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
+                # 🔹 Corrige a URL gerada para o Supabase e faz encoding
+                encoded_file_path = parse.quote(file_path, safe='')
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{encoded_file_path}"
+                
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Gerada:** {pdf_url}")
 
@@ -101,13 +103,6 @@ def upload_pdf():
                 except Exception as e:
                     st.error(f"❌ **DEBUG - Erro ao acessar o PDF no Supabase:** {str(e)}")
                     return
-
-                # 🔹 Revalida a sessão do usuário antes do INSERT
-                session_info = supabase.auth.get_session()
-                if session_info is None:
-                    supabase.auth.refresh_session()
-                    session_info = supabase.auth.get_session()
-                    st.write(f"🔍 **DEBUG - Sessão Atualizada:** {session_info}")
 
                 # 🔹 Criar uma pré-prova vinculada ao usuário logado
                 st.write("📊 **DEBUG - Tentando inserir na tabela preprovas**")
