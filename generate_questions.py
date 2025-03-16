@@ -13,7 +13,7 @@ openai.api_key = OPENAI_KEY
 def extract_text_from_pdf(pdf_url):
     """Baixa o PDF do Supabase e extrai o texto."""
 
-    st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
+    # st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
 
     # 🔹 Verifica se a URL pública tem barras duplas e remove
     pdf_url = re.sub(r'(?<!:)//+', '/', pdf_url)
