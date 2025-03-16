@@ -17,7 +17,11 @@ def upload_pdf():
 
         with st.spinner("Carregando PDF..."):
             # Envia para o Supabase Storage
-            storage_response = supabase.storage.from_("pdfs").upload(f"{uploaded_file.name}", uploaded_file)
+            # Lê o arquivo em bytes
+            file_bytes = uploaded_file.getvalue()
+
+           # Faz o upload para o Supabase Storage
+           storage_response = supabase.storage.from_("pdfs").upload(f"{uploaded_file.name}", file_bytes)
             
             if not storage_response:
                 st.error("Erro ao fazer upload do arquivo.")
