@@ -64,9 +64,9 @@ def upload_pdf():
                     st.error("❌ Erro: O arquivo pode não ter sido enviado corretamente.")
                     return
                 
-                # 🔹 Gera a URL correta do arquivo no Supabase
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{timestamp}_{safe_file_name}"
-                st.write(f"📄 PDF armazenado: {safe_file_name}")
+                # 🔹 Obtém a URL pública do arquivo armazenado no Supabase
+                pdf_url = supabase.storage.from_("pdfs").get_public_url(file_path)
+                st.write(f"📄 PDF armazenado: [{safe_file_name}]({pdf_url})")
 
                 # 🔹 Aguarda o Supabase processar o arquivo
                 time.sleep(2)
