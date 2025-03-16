@@ -86,7 +86,7 @@ def upload_pdf():
                 pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
                 
                 # 🔹 Corrige barras duplicadas "//"
-                pdf_url = pdf_url.replace(":/", "://").replace("//storage", "/storage")
+                pdf_url = pdf_url.replace(":/", "://").replace("public//", "public/")
 
                 # 🔍 **Debug da URL final**
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
