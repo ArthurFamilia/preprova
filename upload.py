@@ -57,7 +57,7 @@ def upload_pdf():
                 try:
                     bucket_list = supabase.storage.list_buckets()
                     bucket_names = [bucket.id for bucket in bucket_list]
-                    st.write(f"📂 DEBUG - Buckets Disponíveis: {bucket_names}")
+                    # st.write(f"📂 DEBUG - Buckets Disponíveis: {bucket_names}")
 
                     if bucket_name not in bucket_names:
                         st.error(f"❌ Erro: O bucket '{bucket_name}' não existe no Supabase! Verifique no painel.")
@@ -72,7 +72,7 @@ def upload_pdf():
                     temp_file_path = temp_file.name
                 
                 # 🔍 **Debug do Caminho**
-                st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path_in_bucket}")
+                # st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path_in_bucket}")
 
                 # 🔹 Faz o upload para o Supabase Storage
                 with open(temp_file_path, "rb") as file_data:
@@ -121,9 +121,9 @@ def upload_pdf():
                     st.error(f"❌ DEBUG - Erro ao verificar permissões da tabela preprovas: {str(e)}")
                     
                 # 🔹 Insere no banco de dados
-                st.write("📊 **DEBUG - Tentando inserir na tabela preprovas**")
-                st.write(f"📊 **DEBUG - user_id:** {user_id}")
-                st.write(f"📊 **DEBUG - pdf_url:** {pdf_url}")
+                # st.write("📊 **DEBUG - Tentando inserir na tabela preprovas**")
+                # st.write(f"📊 **DEBUG - user_id:** {user_id}")
+                # st.write(f"📊 **DEBUG - pdf_url:** {pdf_url}")
 
                 response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
                 st.write(f"📊 DEBUG - Resposta do INSERT: {response}")
