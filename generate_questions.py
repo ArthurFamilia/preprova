@@ -40,13 +40,16 @@ def extract_text_from_pdf(pdf_url):
 
     # 🔹 Tenta baixar o arquivo **usando o caminho correto no bucket**
     try:
+        st.write("rod 10")
         response = supabase.storage.from_("pdfs").download(file_path_in_bucket)
-
+        st.write("rod 11")
         if response is None:
+            st.write("rod 12")
             st.error(f"❌ DEBUG - Erro ao baixar o PDF do Supabase: {file_path_in_bucket} não encontrado.")
             return None
-
+        
         # 🔹 Lendo o conteúdo do PDF
+        st.write("rod 13")
         with fitz.open(stream=response, filetype="pdf") as doc:
             text = "\n".join([page.get_text("text") for page in doc])
         
