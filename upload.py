@@ -1,7 +1,7 @@
 import streamlit as st
 from supabase import create_client
 from config import SUPABASE_URL, SUPABASE_KEY
-import generate_questions  # Importa a função de geração de questões
+import generate_questions
 import time
 import re
 import tempfile
@@ -10,26 +10,15 @@ from urllib import request, parse
 # Inicializa o cliente Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def check_table_permissions():
-    """ Verifica as permissões da tabela preprovas """
-    try:
-        query = """
-        SELECT grantee, privilege_type FROM information_schema.role_table_grants
-        WHERE table_name = 'preprovas';
-        """
-        response = supabase.rpc("sql", {"sql": query}).execute()
-        st.write("🔍 **DEBUG - Permissões da Tabela `preprovas`:**", response.data)
-    except Exception as e:
-        st.error(f"❌ **DEBUG - Erro ao verificar permissões da tabela `preprovas`:** {str(e)}")
-
 def check_bucket():
-    """ Verifica se o bucket `pdfs` existe e está público """
+    """ Verifica se o bucket `pdfs` existe e está acessível """
     try:
-        bucket_info = supabase.storage.get_bucket("pdfs")
-        st.write("📂 **DEBUG - Bucket Info:**", bucket_info)
+        response = supabase.storage.list_buckets()
+        bucket_names = [b["name"] for b in response.data]
+        st.write("📂 **DEBUG - Buckets Disponíveis:**", bucket_names)
 
-        if not bucket_info["public"]:
-            st.error("❌ **Erro: O bucket 'pdfs' não está público!** Verifique no Supabase.")
+        if "pdfs" not in bucket_names:
+            st.error("❌ **Erro: O bucket 'pdfs' não existe no Supabase!** Verifique no painel.")
             return False
         return True
     except Exception as e:
@@ -67,15 +56,12 @@ def upload_pdf():
     uploaded_file = st.file_uploader("Selecione um arquivo PDF", type="pdf")
     
     if uploaded_file:
-        if uploaded_file.size > 10 * 1024 * 1024:  # Limite de 10MB
+        if uploaded_file.size > 10 * 1024 * 1024:
             st.error("O arquivo excede o tamanho máximo permitido (10MB).")
             return
 
         with st.spinner("Carregando PDF..."):
             try:
-                # 🔹 Verificar permissões da tabela
-                check_table_permissions()
-
                 # 🔹 Verificar se o bucket existe
                 if not check_bucket():
                     return
@@ -85,8 +71,8 @@ def upload_pdf():
 
                 # 🔹 Remove espaços e caracteres especiais do nome do arquivo
                 safe_file_name = re.sub(r'\s+', '_', uploaded_file.name)
-                safe_file_name = re.sub(r'[^\w\-.]', '', safe_file_name)  # Remove caracteres especiais
-                
+                safe_file_name = re.sub(r'[^\w\-.]', '', safe_file_name)
+
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
                 file_path = f"pdfs/{timestamp}_{safe_file_name}"
@@ -98,12 +84,6 @@ def upload_pdf():
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
                     temp_file.write(uploaded_file.getvalue())
                     temp_file_path = temp_file.name
-
-                # 🔹 Verifica se o arquivo já existe no Supabase Storage e remove
-                existing_files = supabase.storage.from_("pdfs").list()
-                for f in existing_files:
-                    if safe_file_name in f["name"]:
-                        supabase.storage.from_("pdfs").remove(f["name"])
 
                 # 🔹 Faz o upload para o Supabase Storage
                 with open(temp_file_path, "rb") as file_data:
