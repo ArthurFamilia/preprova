@@ -111,7 +111,7 @@ def upload_pdf():
                 st.write(pdf_url)
 
                 # 🔍 **Verifica se a URL está acessível**
-                nova_url = pdf_url.replace('/pdfs%', '/pdfs/pdfs%')
+                nova_url = pdf_url.replace('/pdfs%', '/pdfs/pdfs')
                 try:
                     response = request.urlopen(nova_url)
                     if response.status == 200:
