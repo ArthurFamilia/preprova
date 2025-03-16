@@ -25,9 +25,9 @@ def upload_pdf():
                 # Lê o arquivo como bytes
                 file_bytes = uploaded_file.getvalue()
 
-                # 🔹 Faz o upload para o Supabase Storage sem `headers`
+                # 🔹 Faz o upload para o Supabase Storage com `upsert=True` corretamente
                 storage_response = supabase.storage.from_("pdfs").upload(
-                    file_path, file_bytes, file_options={"upsert": True}
+                    file_path, file_bytes, upsert=True
                 )
             
                 if not storage_response:
