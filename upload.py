@@ -102,20 +102,20 @@ def upload_pdf():
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Final Corrigida:** {pdf_url}")
 
-                nova_url = pdf_url.replace('/pdfs%2F', '/pdfs/pdfs/')
+                
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
 
                 # 🔍 **Aguarda 10 segundos antes de acessar o arquivo**
                 st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
                 time.sleep(10)
-                st.write(nova_url)
+                st.write(pdf_url)
 
 
                 # 🔍 **Verifica se a URL está acessível**
                
                 try:
-                    response = request.urlopen(nova_url)
+                    response = request.urlopen(pdf_url)
                     if response.status == 200:
                         st.write("3")
                         st.write("✅ **DEBUG - O arquivo está acessível no Supabase.**")
@@ -138,9 +138,9 @@ def upload_pdf():
                 # 🔹 Insere no banco de dados
                 st.write("📊 **rod DEBUG - Tentando inserir na tabela preprovas**")
                 st.write(f"📊 **DEBUG - user_id:** {user_id}")
-                st.write(f"📊 **DEBUG - pdf_url:** {nova_url}")
+                st.write(f"📊 **DEBUG - pdf_url:** {pdf_url}")
 
-                response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": nova_url}).execute()
+                response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
 
                 st.write(f"📊 DEBUG - Resposta do INSERT: {response}")
                 st.write("1")
@@ -153,7 +153,7 @@ def upload_pdf():
                     # 🔹 Chama a API da OpenAI para gerar perguntas automaticamente
                     with st.spinner("📝 Gerando questões... Isso pode levar alguns segundos."):
                         st.write("3")
-                        success = generate_questions.generate_questions(preprova_id, nova_url)
+                        success = generate_questions.generate_questions(preprova_id, pdf_url)
                         st.write("4")
                         if success:
                             st.success("🎉 Questões geradas com sucesso! Acesse sua pré-prova.")
