@@ -47,7 +47,10 @@ def upload_pdf():
                 
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"pdfs/{timestamp}_{safe_file_name}"
+                file_path_in_bucket = f"{timestamp}_{safe_file_name}"  # Apenas nome do arquivo, sem "pdfs/"
+
+                # 🔹 Define o bucket
+                bucket_name = "pdfs"
 
                 # 🔍 **Verificação do Bucket**
                 st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
@@ -56,8 +59,8 @@ def upload_pdf():
                     bucket_names = [bucket.id for bucket in bucket_list]
                     st.write(f"📂 DEBUG - Buckets Disponíveis: {bucket_names}")
 
-                    if "pdfs" not in bucket_names:
-                        st.error("❌ Erro: O bucket 'pdfs' não existe no Supabase! Verifique no painel.")
+                    if bucket_name not in bucket_names:
+                        st.error(f"❌ Erro: O bucket '{bucket_name}' não existe no Supabase! Verifique no painel.")
                         return
                 except Exception as e:
                     st.error(f"❌ DEBUG - Erro ao verificar buckets: {str(e)}")
@@ -69,24 +72,26 @@ def upload_pdf():
                     temp_file_path = temp_file.name
                 
                 # 🔍 **Debug do Caminho**
-                st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path}")
-                
+                st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path_in_bucket}")
+
                 # 🔹 Faz o upload para o Supabase Storage
                 with open(temp_file_path, "rb") as file_data:
-                    storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data)
+                    response = supabase.storage.from_(bucket_name).upload(
+                        file_path_in_bucket, file_data, {"content-type": "application/pdf"}
+                    )
 
                 # 🔍 **Verificação do Upload**
-                st.write(f"📤 DEBUG - Resposta do Upload: {storage_response}")
+                st.write(f"📤 DEBUG - Resposta do Upload: {response}")
 
-                if not storage_response:
+                if not response:
                     st.error("❌ **DEBUG - O arquivo pode não ter sido enviado corretamente.**")
                     return
-                
+
                 # 🔹 Gera a URL final garantindo que o formato seja correto
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
-                
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{bucket_name}/{file_path_in_bucket}"
+
                 # 🔹 Corrige barras duplicadas "//"
-                pdf_url = pdf_url.replace(":/", "://").replace("public//", "public/")
+                pdf_url = pdf_url.replace(":/", "://").replace("//", "/")
 
                 # 🔍 **Debug da URL final**
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
