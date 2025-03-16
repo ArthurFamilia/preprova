@@ -17,7 +17,7 @@ def extract_text_from_pdf(pdf_url):
     # 🔹 Obtém apenas o nome do arquivo da URL (remove o Supabase URL)
 
     pdf_file_name = pdf_url.split("/")[-1] 
-    st.write(("a1" + pdf_file_name)
+    #st.write(("a1" + pdf_file_name)
     file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho correto no bucket
 
     # 🔹 Aguarda 5 segundos para garantir que o Supabase processe o upload
