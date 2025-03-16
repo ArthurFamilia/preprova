@@ -101,7 +101,7 @@ def upload_pdf():
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Final Corrigida:** {pdf_url}")
 
-                nova_url = pdf_url.replace('/pdfs%2F', '/pdfs/pdfs')
+                nova_url = pdf_url.replace('/pdfs%2F', '/pdfs/pdfs/')
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
 
