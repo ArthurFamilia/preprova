@@ -1,7 +1,7 @@
 import streamlit as st
 from supabase import create_client
 from config import SUPABASE_URL, SUPABASE_KEY
-import generate_questions
+import generate_questions  # Importa a função de geração de questões
 import time
 import re
 import tempfile
@@ -9,39 +9,6 @@ from urllib import request, parse
 
 # Inicializa o cliente Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-def check_bucket():
-    """ Verifica se o bucket `pdfs` existe e está acessível """
-    try:
-        response = supabase.storage.list_buckets()
-
-        # 🔹 Debug: Imprime toda a resposta bruta do Supabase para investigação
-        st.write("📂 **DEBUG - Resposta bruta do Supabase (Buckets):**", response)
-
-        # Se `response` for uma lista, extrair os nomes dos buckets corretamente
-        if isinstance(response, list):
-            bucket_names = [b["name"] for b in response]
-        else:
-            bucket_names = []  # Evita erro caso `response` não seja uma lista
-
-        st.write("📂 **DEBUG - Buckets Disponíveis:**", bucket_names)
-
-        if "pdfs" not in bucket_names:
-            st.error("❌ **Erro: O bucket 'pdfs' não existe no Supabase!** Verifique no painel.")
-            return False
-        return True
-    except Exception as e:
-        st.error(f"❌ **DEBUG - Erro ao verificar bucket `pdfs`:** {str(e)}")
-        return False
-
-
-def check_storage_files():
-    """ Lista arquivos no bucket `pdfs` """
-    try:
-        existing_files = supabase.storage.from_("pdfs").list()
-        st.write("📂 **DEBUG - Arquivos no Supabase:**", existing_files)
-    except Exception as e:
-        st.error(f"❌ **DEBUG - Erro ao listar arquivos no Supabase:** {str(e)}")
 
 def upload_pdf():
     st.title("Upload de Arquivo PDF")
@@ -66,23 +33,16 @@ def upload_pdf():
     uploaded_file = st.file_uploader("Selecione um arquivo PDF", type="pdf")
     
     if uploaded_file:
-        if uploaded_file.size > 10 * 1024 * 1024:
+        if uploaded_file.size > 10 * 1024 * 1024:  # Limite de 10MB
             st.error("O arquivo excede o tamanho máximo permitido (10MB).")
             return
 
         with st.spinner("Carregando PDF..."):
             try:
-                # 🔹 Verificar se o bucket existe
-                if not check_bucket():
-                    return
-
-                # 🔹 Listar arquivos existentes no bucket
-                check_storage_files()
-
                 # 🔹 Remove espaços e caracteres especiais do nome do arquivo
                 safe_file_name = re.sub(r'\s+', '_', uploaded_file.name)
-                safe_file_name = re.sub(r'[^\w\-.]', '', safe_file_name)
-
+                safe_file_name = re.sub(r'[^\w\-.]', '', safe_file_name)  # Remove caracteres especiais
+                
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
                 file_path = f"pdfs/{timestamp}_{safe_file_name}"
@@ -94,6 +54,14 @@ def upload_pdf():
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
                     temp_file.write(uploaded_file.getvalue())
                     temp_file_path = temp_file.name
+
+                # 🔹 Verifica se o bucket `pdfs` é acessível antes do upload
+                bucket_check = supabase.storage.list_buckets()
+                st.write("📂 **DEBUG - Buckets Disponíveis:**", bucket_check)
+
+                if not any(bucket["name"] == "pdfs" for bucket in bucket_check):
+                    st.error("❌ **Erro: O bucket 'pdfs' não existe no Supabase!** Verifique no painel.")
+                    return
 
                 # 🔹 Faz o upload para o Supabase Storage
                 with open(temp_file_path, "rb") as file_data:
@@ -123,7 +91,7 @@ def upload_pdf():
                     if response.status == 200:
                         st.write("✅ **DEBUG - O arquivo está acessível no Supabase.**")
                     else:
-                        raise Exception(f"Erro ao acessar o arquivo no Supabase Storage. Código: {response.status}")
+                        raise Exception("Erro ao acessar o arquivo no Supabase Storage.")
                 except Exception as e:
                     st.error(f"❌ **DEBUG - Erro ao acessar o PDF no Supabase:** {str(e)}")
                     return
@@ -142,7 +110,6 @@ def upload_pdf():
 
                     # 🔹 Chama a API da OpenAI para gerar perguntas automaticamente
                     with st.spinner("📝 Gerando questões... Isso pode levar alguns segundos."):
-
                         success = generate_questions.generate_questions(preprova_id, pdf_url)
 
                         if success:
