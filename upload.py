@@ -48,7 +48,7 @@ def upload_pdf():
                 
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"pdfs/{timestamp}_{safe_file_name}"
+                file_path = f"pdfs/pdfs/{timestamp}_{safe_file_name}"
 
                 # 🔍 **Verificação do Bucket**
                 st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
@@ -86,10 +86,11 @@ def upload_pdf():
                 
                 # 🔹 Corrige a URL gerada para o Supabase
                 # 🔹 Corrige a URL gerada para o Supabase sem duplicação do "pdfs/"
-                if "pdfs/pdfs/" in storage_response.full_path:
-                    corrected_path = storage_response.full_path.replace("pdfs/pdfs/", "pdfs/")
-                else:
-                    corrected_path = storage_response.full_path
+                #if "pdfs/pdfs/" in storage_response.full_path:
+                #    corrected_path = storage_response.full_path.replace("pdfs/pdfs/", "pdfs/")
+                #else:
+                #     corrected_path = storage_response.full_path
+                corrected_path = storage_response.full_path
                 
                 # 🔍 **Debug da URL corrigida**
                 st.write(f"📂 DEBUG - Caminho Corrigido do Arquivo no Supabase: {corrected_path}")
