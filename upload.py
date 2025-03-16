@@ -38,7 +38,7 @@ def upload_pdf():
                 
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"pdfs/{timestamp}_{safe_file_name}"
+                file_path = f"{timestamp}_{safe_file_name}"
 
                 # 🔹 Salva o arquivo temporariamente antes do upload
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
@@ -64,12 +64,12 @@ def upload_pdf():
                     st.error("❌ Erro: O arquivo pode não ter sido enviado corretamente.")
                     return
                 
-                # 🔹 Obtém a URL pública do arquivo armazenado no Supabase
+                # 🔹 Gera a URL pública do arquivo armazenado no Supabase
                 pdf_url = supabase.storage.from_("pdfs").get_public_url(file_path)
                 st.write(f"📄 PDF armazenado: [{safe_file_name}]({pdf_url})")
 
-                # 🔹 Aguarda o Supabase processar o arquivo
-                time.sleep(2)
+                # 🔹 Aguarda o Supabase processar o arquivo antes de acessá-lo
+                time.sleep(3)
 
                 # 🔹 Testa se a URL está acessível
                 try:
@@ -77,7 +77,7 @@ def upload_pdf():
                     if response.status != 200:
                         raise Exception("Erro ao acessar o arquivo no Supabase Storage.")
                 except Exception as e:
-                    st.error(f"Erro ao acessar o PDF no Supabase: {str(e)}")
+                    st.error(f"❌ Erro ao acessar o PDF no Supabase: {str(e)}")
                     return
 
                 # 🔹 Criar uma pré-prova vinculada ao usuário logado
