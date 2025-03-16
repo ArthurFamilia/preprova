@@ -6,6 +6,11 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def login_page():
     st.title("Pre Prova Medicina")
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("logo.jpg", width=341)
+    with col2:
+        st.markdown("<h3>Sua Inteligência, nossa IA, rumo ao seu jaleco branco.</h3>", unsafe_allow_html=True)
 
     login_option = st.radio("Escolha uma opção:", ("Login", "Cadastro"))
     email = st.text_input("Email")
