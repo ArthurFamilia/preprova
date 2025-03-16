@@ -109,14 +109,18 @@ def upload_pdf():
                 st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
                 time.sleep(10)
                 st.write(nova_url)
+                st.write("1")
 
                 # 🔍 **Verifica se a URL está acessível**
                
                 try:
+                    st.write("2")
                     response = request.urlopen(nova_url)
                     if response.status == 200:
+                        st.write("3")
                         st.write("✅ **DEBUG - O arquivo está acessível no Supabase.**")
                     else:
+                        st.write("4")
                         st.write("response.status")
                         raise Exception("Erro ao acessar o arquivo no Supabase Storage.")
                 except Exception as e:
