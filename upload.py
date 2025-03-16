@@ -48,7 +48,7 @@ def upload_pdf():
                 
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"pdfs/pdfs/{timestamp}_{safe_file_name}"  # <== Corrigido para garantir "pdfs/pdfs/"
+                file_path = f"{timestamp}_{safe_file_name}"  # Remove "pdfs/"  # <== Corrigido para garantir "pdfs/pdfs/"
 
                 # 🔍 **Verificação do Bucket**
                 st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
@@ -85,7 +85,7 @@ def upload_pdf():
                     return
                 
                 # 🔹 Corrige a URL gerada para o Supabase
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"  # <== Corrigido para manter estrutura correta
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{file_path}"  # <== Corrigido para manter estrutura correta
                 
                 # 🔍 **Debug da URL final**
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
