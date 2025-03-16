@@ -114,11 +114,11 @@ def upload_pdf():
 
                 # 🔍 **Verificação da Permissão para INSERT**
                 # st.write("📊 **DEBUG - Verificando permissões da tabela preprovas**")
-                try:
-                    perm_query = supabase.rpc("has_table_privilege", {"table_name": "preprovas", "privilege": "INSERT"}).execute()
-                    st.write(f"🔍 DEBUG - Permissões INSERT na tabela preprovas: {perm_query}")
-                except Exception as e:
-                    st.error(f"❌ DEBUG - Erro ao verificar permissões da tabela preprovas: {str(e)}")
+                # try:
+                #    perm_query = supabase.rpc("has_table_privilege", {"table_name": "preprovas", "privilege": "INSERT"}).execute()
+                #     st.write(f"🔍 DEBUG - Permissões INSERT na tabela preprovas: {perm_query}")
+                # except Exception as e:
+                #    st.error(f"❌ DEBUG - Erro ao verificar permissões da tabela preprovas: {str(e)}")
                     
                 # 🔹 Insere no banco de dados
                 # st.write("📊 **DEBUG - Tentando inserir na tabela preprovas**")
@@ -138,7 +138,9 @@ def upload_pdf():
                         success = generate_questions.generate_questions(preprova_id, pdf_url)
                         if success:
                             st.success("🎉 Questões geradas com sucesso! Acesse sua pré-prova.")
-                            st.rerun()
+
+                            # Redireciona para uma nova página ao invés de dar refresh
+                            st.experimental_set_query_params(page="preprova")
                         else:
                             st.error("❌ Erro ao gerar questões. Tente novamente.")
                 else:
