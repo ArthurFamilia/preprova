@@ -30,7 +30,7 @@ def upload_pdf():
             try:
                 # 🔹 Nome do arquivo com timestamp para evitar conflitos
                 timestamp = int(time.time())  
-                file_path = f"pdfs/{timestamp}_{uploaded_file.name}"
+                file_path = f"pdfs/{uploaded_file.name}"  # 🔹 Garante que o arquivo será salvo no bucket correto
 
                 # Lê o arquivo como bytes
                 file_bytes = uploaded_file.getvalue()
@@ -43,7 +43,7 @@ def upload_pdf():
                     return
 
                 # Obtém URL do arquivo
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{uploaded_file.name}"
 
                 # 🔹 Criar uma pré-prova vinculada ao usuário logado
                 response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
