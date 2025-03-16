@@ -140,7 +140,7 @@ def upload_pdf():
                             st.success("🎉 Questões geradas com sucesso! Acesse sua pré-prova.")
 
                             # Redireciona para uma nova página ao invés de dar refresh
-                            st.experimental_set_query_params(page="preprova")
+                            st.query_params(page="preprova")
                         else:
                             st.error("❌ Erro ao gerar questões. Tente novamente.")
                 else:
