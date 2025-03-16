@@ -113,7 +113,7 @@ def upload_pdf():
 
 
                 # 🔍 **Verifica se a URL está acessível**
-               
+                st.write("rod 1: " + pdf_url )
                 try:
                     response = request.urlopen(pdf_url)
                     if response.status == 200:
