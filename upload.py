@@ -48,7 +48,7 @@ def upload_pdf():
                 
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"pdfs/pdfs/{timestamp}_{safe_file_name}"
+                file_path = f"pdfs/{timestamp}_{safe_file_name}"
 
                 # 🔍 **Verificação do Bucket**
                 st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
