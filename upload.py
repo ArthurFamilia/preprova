@@ -55,6 +55,14 @@ def upload_pdf():
                     temp_file.write(uploaded_file.getvalue())
                     temp_file_path = temp_file.name
 
+                # 🔹 Verifica se o bucket `pdfs` é público antes do upload
+                bucket_info = supabase.storage.get_bucket("pdfs")
+                st.write("📂 **DEBUG - Bucket Info:**", bucket_info)
+
+                if not bucket_info["public"]:
+                    st.error("❌ **Erro: O bucket 'pdfs' não está público!** Verifique no Supabase.")
+                    return
+
                 # 🔹 Verifica se o arquivo já existe no Supabase Storage e remove
                 existing_files = supabase.storage.from_("pdfs").list()
                 file_names = [f["name"] for f in existing_files]
@@ -79,8 +87,9 @@ def upload_pdf():
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Gerada:** {pdf_url}")
 
-                # 🔹 Aguarda o Supabase processar o arquivo antes de acessá-lo
-                time.sleep(3)
+                # 🔹 Aguarda 10 segundos antes de acessar o arquivo
+                st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
+                time.sleep(10)
 
                 # 🔹 Testa se a URL está acessível
                 try:
