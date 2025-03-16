@@ -58,12 +58,14 @@ def upload_pdf():
                     storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data)
 
                 # 🔹 Confirma se o upload foi bem-sucedido
-                if storage_response is None:
-                    st.error("Erro ao fazer upload do arquivo. Verifique se o bucket existe e se há permissões suficientes.")
+                if storage_response:
+                    st.write("✅ Upload realizado com sucesso. Confirme no Supabase Storage.")
+                else:
+                    st.error("❌ Erro: O arquivo pode não ter sido enviado corretamente.")
                     return
                 
                 # 🔹 Gera a URL correta do arquivo no Supabase
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{file_path}"
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{timestamp}_{safe_file_name}"
                 st.write(f"📄 PDF armazenado: {safe_file_name}")
 
                 # 🔹 Aguarda o Supabase processar o arquivo
