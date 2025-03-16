@@ -38,7 +38,7 @@ def upload_pdf():
                 
                 # 🔹 Adiciona timestamp para evitar duplicação
                 timestamp = int(time.time())  
-                file_path = f"pdfs/{timestamp}_{safe_file_name}"
+                file_path = f"{timestamp}_{safe_file_name}"
 
                 # 🔹 Debug: Imprimir caminho do arquivo gerado
                 st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path}")
@@ -67,8 +67,8 @@ def upload_pdf():
                     st.error("❌ **DEBUG - O arquivo pode não ter sido enviado corretamente.**")
                     return
                 
-                # 🔹 Obtém a URL pública do arquivo armazenado no Supabase
-                pdf_url = supabase.storage.from_("pdfs").get_public_url(file_path)
+                # 🔹 Corrige a URL gerada para o Supabase
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{file_path}"
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Gerada:** {pdf_url}")
 
@@ -78,10 +78,10 @@ def upload_pdf():
                 # 🔹 Testa se a URL está acessível
                 try:
                     response = request.urlopen(pdf_url)
-                    if response.status != 200:
-                        raise Exception("Erro ao acessar o arquivo no Supabase Storage.")
-                    else:
+                    if response.status == 200:
                         st.write("✅ **DEBUG - O arquivo está acessível no Supabase.**")
+                    else:
+                        raise Exception("Erro ao acessar o arquivo no Supabase Storage.")
                 except Exception as e:
                     st.error(f"❌ **DEBUG - Erro ao acessar o PDF no Supabase:** {str(e)}")
                     return
