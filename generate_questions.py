@@ -15,7 +15,7 @@ def extract_text_from_pdf(pdf_url):
     st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
 
     # 🔹 Obtém apenas o nome do arquivo a partir da URL
-    pdf_file_name = pdf_url.split("/")[-1]  # Exemplo: "1742148951_t.pdf"
+    pdf_file_name = pdf_url.split("/")[-1]  # Exemplo: "1742149122_teste1.pdf"
     file_path_in_bucket = f"pdfs/{pdf_file_name}"  # Caminho correto no bucket
 
     # 🔹 Aguarda 5 segundos para garantir que o Supabase processe o upload
@@ -28,6 +28,7 @@ def extract_text_from_pdf(pdf_url):
         existing_file_names = [file["name"] for file in existing_files]
 
         st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
+        st.write(f"📂 DEBUG - Tentando baixar o arquivo com caminho: {file_path_in_bucket}")
 
         if pdf_file_name not in existing_file_names:
             st.error(f"❌ DEBUG - O arquivo '{pdf_file_name}' não foi encontrado no bucket!")
@@ -43,6 +44,8 @@ def extract_text_from_pdf(pdf_url):
         if not response:
             st.error(f"❌ DEBUG - Erro ao baixar o PDF do Supabase: {file_path_in_bucket} não encontrado.")
             return None
+
+        st.write(f"✅ DEBUG - Arquivo {pdf_file_name} baixado com sucesso.")
 
         # 🔹 Lendo o conteúdo do PDF
         with fitz.open(stream=response, filetype="pdf") as doc:
