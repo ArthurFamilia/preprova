@@ -19,22 +19,26 @@ def generate_questions(preprova_id, pdf_url):
     prompt = f"Crie 5 perguntas no formato flashcards com base neste texto:\n{pdf_text[:2000]}"
 
     try:
-        response = client.chat.completions.create(  # ✅ Atualizado para API nova
-            model="gpt-4o-mini",  # Mantenha o modelo desejado
+        response = client.chat.completions.create(  # ✅ Atualizado para a API openai>=1.0.0
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "Você é um criador de flashcards para estudo médico."},
                 {"role": "user", "content": prompt}
             ]
         )
 
-        questions = [choice.message.content for choice in response.choices]  # ✅ Adaptação correta
+        if response and response.choices:
+            questions = [choice.message.content for choice in response.choices]
 
-        # Insere as perguntas na tabela `questoes`
-        for pergunta in questions:
-            supabase.table("questoes").insert({"preprova_id": preprova_id, "pergunta": pergunta}).execute()
+            # 🔹 Insere as perguntas na tabela `questoes`
+            for pergunta in questions:
+                supabase.table("questoes").insert({"preprova_id": preprova_id, "pergunta": pergunta}).execute()
 
-        st.success("🎉 Questões geradas com sucesso!")
-        return True
+            st.success("✅ DEBUG - Questões geradas e armazenadas com sucesso.")
+            return True
+        else:
+            st.error("❌ DEBUG - Erro na resposta da OpenAI.")
+            return False
     except Exception as e:
         st.error(f"❌ DEBUG - Erro ao gerar perguntas com OpenAI: {str(e)}")
         return False
