@@ -133,9 +133,9 @@ def upload_pdf():
                 # 🔹 Insere no banco de dados
                 st.write("📊 **rod DEBUG - Tentando inserir na tabela preprovas**")
                 st.write(f"📊 **DEBUG - user_id:** {user_id}")
-                st.write(f"📊 **DEBUG - pdf_url:** {pdf_url}")
+                st.write(f"📊 **DEBUG - pdf_url:** {nova_url}")
 
-                response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
+                response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": nova_url}).execute()
 
                 st.write(f"📊 DEBUG - Resposta do INSERT: {response}")
 
@@ -147,7 +147,7 @@ def upload_pdf():
                     # 🔹 Chama a API da OpenAI para gerar perguntas automaticamente
                     with st.spinner("📝 Gerando questões... Isso pode levar alguns segundos."):
 
-                        success = generate_questions.generate_questions(preprova_id, pdf_url)
+                        success = generate_questions.generate_questions(preprova_id, nova_url)
 
                         if success:
                             st.success("🎉 Questões geradas com sucesso! Acesse sua pré-prova.")
