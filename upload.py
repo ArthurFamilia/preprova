@@ -13,22 +13,21 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 def upload_pdf():
     st.title("Upload de Arquivo PDF")
 
-    # 🔹 Obtém o usuário autenticado da sessão
+    # 🔍 **Verificação de Usuário**
     user_id = st.session_state.get("user_id")
 
-    # 🔹 Se `user_id` for None, tenta buscar novamente no Supabase
+    # Se `user_id` não estiver na sessão, tenta buscar novamente
     if not user_id:
         user_data = supabase.auth.get_user()
         if user_data and hasattr(user_data, "user") and user_data.user:
             user_id = user_data.user.id
             st.session_state["user_id"] = user_id
 
-    if not user_id:
-        st.error("Usuário não autenticado. Faça login novamente.")
-        return
+    st.write(f"🔍 DEBUG - user_id na sessão: {user_id}")
 
-    # 🔹 Debug: Verificar usuário logado
-    st.write("🔍 **DEBUG - Usuário Autenticado:**", user_id)
+    if not user_id:
+        st.error("❌ Usuário não autenticado. Faça login novamente.")
+        return
 
     uploaded_file = st.file_uploader("Selecione um arquivo PDF", type="pdf")
     
@@ -47,45 +46,51 @@ def upload_pdf():
                 timestamp = int(time.time())  
                 file_path = f"pdfs/{timestamp}_{safe_file_name}"
 
-                # 🔹 Debug: Imprimir caminho do arquivo gerado
-                st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path}")
+                # 🔍 **Verificação do Bucket**
+                st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
+                try:
+                    bucket_list = supabase.storage.list_buckets()
+                    st.write(f"📂 DEBUG - Buckets Disponíveis: {bucket_list}")
+                    bucket_names = [bucket.id for bucket in bucket_list]
+                    
+                    if "pdfs" not in bucket_names:
+                        st.error("❌ Erro: O bucket 'pdfs' não existe no Supabase! Verifique no painel.")
+                        return
+                except Exception as e:
+                    st.error(f"❌ DEBUG - Erro ao verificar buckets: {str(e)}")
+                    return
 
                 # 🔹 Salva o arquivo temporariamente antes do upload
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
                     temp_file.write(uploaded_file.getvalue())
                     temp_file_path = temp_file.name
 
-                # 🔹 Verifica se o bucket `pdfs` é acessível antes do upload
-                bucket_check = supabase.storage.list_buckets()
-                st.write("📂 **DEBUG - Buckets Disponíveis:**", bucket_check)
-
-                if not any(bucket["name"] == "pdfs" for bucket in bucket_check):
-                    st.error("❌ **Erro: O bucket 'pdfs' não existe no Supabase!** Verifique no painel.")
-                    return
+                # 🔍 **Debug do Caminho**
+                st.write(f"📂 **DEBUG - Caminho do Arquivo no Supabase:** {file_path}")
 
                 # 🔹 Faz o upload para o Supabase Storage
                 with open(temp_file_path, "rb") as file_data:
-                    storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data)
+                    storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data.read())  
 
-                # 🔹 Confirma se o upload foi bem-sucedido
-                if storage_response:
-                    st.write("✅ **DEBUG - Upload realizado com sucesso.** Confirme no Supabase Storage.")
-                else:
+                # 🔍 **Verificação do Upload**
+                st.write(f"📤 DEBUG - Resposta do Upload: {storage_response}")
+
+                if not storage_response:
                     st.error("❌ **DEBUG - O arquivo pode não ter sido enviado corretamente.**")
                     return
                 
-                # 🔹 Corrige a URL gerada para o Supabase e faz encoding
+                # 🔹 Corrige a URL gerada para o Supabase
                 encoded_file_path = parse.quote(file_path, safe='')
                 pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{encoded_file_path}"
                 
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
-                st.write(f"🔗 **DEBUG - URL Gerada:** {pdf_url}")
+                st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
 
-                # 🔹 Aguarda 10 segundos antes de acessar o arquivo
+                # 🔍 **Aguarda 10 segundos antes de acessar o arquivo**
                 st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
                 time.sleep(10)
 
-                # 🔹 Testa se a URL está acessível
+                # 🔍 **Verifica se a URL está acessível**
                 try:
                     response = request.urlopen(pdf_url)
                     if response.status == 200:
@@ -96,12 +101,22 @@ def upload_pdf():
                     st.error(f"❌ **DEBUG - Erro ao acessar o PDF no Supabase:** {str(e)}")
                     return
 
-                # 🔹 Criar uma pré-prova vinculada ao usuário logado
+                # 🔍 **Verificação da Permissão para INSERT**
+                st.write("📊 **DEBUG - Verificando permissões da tabela preprovas**")
+                try:
+                    perm_query = supabase.rpc("has_table_privilege", {"table_name": "preprovas", "privilege": "INSERT"}).execute()
+                    st.write(f"🔍 DEBUG - Permissões INSERT na tabela preprovas: {perm_query}")
+                except Exception as e:
+                    st.error(f"❌ DEBUG - Erro ao verificar permissões da tabela preprovas: {str(e)}")
+
+                # 🔹 Insere no banco de dados
                 st.write("📊 **DEBUG - Tentando inserir na tabela preprovas**")
                 st.write(f"📊 **DEBUG - user_id:** {user_id}")
                 st.write(f"📊 **DEBUG - pdf_url:** {pdf_url}")
 
                 response = supabase.table("preprovas").insert({"user_id": user_id, "pdf_url": pdf_url}).execute()
+
+                st.write(f"📊 DEBUG - Resposta do INSERT: {response}")
 
                 if response.data:
                     preprova_id = response.data[0]["id"]
@@ -121,3 +136,4 @@ def upload_pdf():
                     st.error("❌ Erro ao criar pré-prova no banco de dados.")
             except Exception as e:
                 st.error(f"❌ **DEBUG - Erro no upload para o Supabase:** {str(e)}")
+
