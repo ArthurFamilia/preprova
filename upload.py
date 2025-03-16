@@ -18,10 +18,14 @@ def upload_pdf():
 
     # Se `user_id` não estiver na sessão, tenta buscar novamente
     if not user_id:
-        user_data = supabase.auth.get_user()
-        if user_data and hasattr(user_data, "user") and user_data.user:
-            user_id = user_data.user.id
-            st.session_state["user_id"] = user_id
+        try:
+            user_data = supabase.auth.get_user()
+            if user_data and hasattr(user_data, "user") and user_data.user:
+                user_id = user_data.user.id
+                st.session_state["user_id"] = user_id
+        except Exception as e:
+            st.error(f"❌ DEBUG - Erro ao recuperar usuário do Supabase: {str(e)}")
+            return
 
     st.write(f"🔍 DEBUG - user_id na sessão: {user_id}")
 
@@ -30,7 +34,7 @@ def upload_pdf():
         return
 
     uploaded_file = st.file_uploader("Selecione um arquivo PDF", type="pdf")
-    
+
     if uploaded_file:
         if uploaded_file.size > 10 * 1024 * 1024:  # Limite de 10MB
             st.error("O arquivo excede o tamanho máximo permitido (10MB).")
@@ -50,9 +54,10 @@ def upload_pdf():
                 st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
                 try:
                     bucket_list = supabase.storage.list_buckets()
-                    st.write(f"📂 DEBUG - Buckets Disponíveis: {bucket_list}")
                     bucket_names = [bucket.id for bucket in bucket_list]
-                    
+
+                    st.write(f"📂 DEBUG - Buckets Disponíveis: {bucket_names}")
+
                     if "pdfs" not in bucket_names:
                         st.error("❌ Erro: O bucket 'pdfs' não existe no Supabase! Verifique no painel.")
                         return
@@ -70,7 +75,7 @@ def upload_pdf():
 
                 # 🔹 Faz o upload para o Supabase Storage
                 with open(temp_file_path, "rb") as file_data:
-                    storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data.read())  
+                    storage_response = supabase.storage.from_("pdfs").upload(file_path, file_data.read())
 
                 # 🔍 **Verificação do Upload**
                 st.write(f"📤 DEBUG - Resposta do Upload: {storage_response}")
@@ -81,7 +86,7 @@ def upload_pdf():
                 
                 # 🔹 Corrige a URL gerada para o Supabase
                 encoded_file_path = parse.quote(file_path, safe='')
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{encoded_file_path}"
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{encoded_file_path}"
                 
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
@@ -125,6 +130,7 @@ def upload_pdf():
 
                     # 🔹 Chama a API da OpenAI para gerar perguntas automaticamente
                     with st.spinner("📝 Gerando questões... Isso pode levar alguns segundos."):
+
                         success = generate_questions.generate_questions(preprova_id, pdf_url)
 
                         if success:
@@ -136,4 +142,3 @@ def upload_pdf():
                     st.error("❌ Erro ao criar pré-prova no banco de dados.")
             except Exception as e:
                 st.error(f"❌ **DEBUG - Erro no upload para o Supabase:** {str(e)}")
-
