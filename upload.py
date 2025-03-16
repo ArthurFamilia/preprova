@@ -53,7 +53,7 @@ def upload_pdf():
                 bucket_name = "pdfs"
 
                 # 🔍 **Verificação do Bucket**
-                st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
+                # st.write("📂 DEBUG - Listando buckets disponíveis no Supabase...")
                 try:
                     bucket_list = supabase.storage.list_buckets()
                     bucket_names = [bucket.id for bucket in bucket_list]
@@ -81,7 +81,7 @@ def upload_pdf():
                     )
 
                 # 🔍 **Verificação do Upload**
-                st.write(f"📤 DEBUG - Resposta do Upload: {response}")
+                #  st.write(f"📤 DEBUG - Resposta do Upload: {response}")
 
                 if not response:
                     st.error("❌ **DEBUG - O arquivo pode não ter sido enviado corretamente.**")
@@ -113,7 +113,7 @@ def upload_pdf():
                     return
 
                 # 🔍 **Verificação da Permissão para INSERT**
-                st.write("📊 **DEBUG - Verificando permissões da tabela preprovas**")
+                # st.write("📊 **DEBUG - Verificando permissões da tabela preprovas**")
                 try:
                     perm_query = supabase.rpc("has_table_privilege", {"table_name": "preprovas", "privilege": "INSERT"}).execute()
                     st.write(f"🔍 DEBUG - Permissões INSERT na tabela preprovas: {perm_query}")
