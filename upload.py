@@ -94,8 +94,8 @@ def upload_pdf():
                 pdf_url = pdf_url.replace(":/", "://").replace("//", "/")
 
                 # 🔍 **Debug da URL final**
-                st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
-                st.write(f"🔗 **DEBUG - URL Final Corrigida:** {pdf_url}")
+                # st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
+                # st.write(f"🔗 **DEBUG - URL Final Corrigida:** {pdf_url}")
 
                 # 🔍 **Aguarda 10 segundos antes de acessar o arquivo**
                 st.write("⏳ **DEBUG - Aguardando 10 segundos para garantir que o Supabase processe o arquivo...**")
