@@ -85,8 +85,22 @@ def upload_pdf():
                     return
                 
                 # 🔹 Corrige a URL gerada para o Supabase
-                encoded_file_path = parse.quote(file_path, safe='')
-                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdfs/{encoded_file_path}"
+                # 🔹 Corrige a URL gerada para o Supabase sem duplicação do "pdfs/"
+                if "pdfs/pdfs/" in storage_response.full_path:
+                    corrected_path = storage_response.full_path.replace("pdfs/pdfs/", "pdfs/")
+                else:
+                    corrected_path = storage_response.full_path
+                
+                # 🔍 **Debug da URL corrigida**
+                st.write(f"📂 DEBUG - Caminho Corrigido do Arquivo no Supabase: {corrected_path}")
+                
+                # 🔹 Gera a URL final correta
+                encoded_file_path = parse.quote(corrected_path, safe='')
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/{encoded_file_path}"
+                
+                st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
+                st.write(f"🔗 **DEBUG - URL Final Corrigida:** {pdf_url}")
+
                 
                 st.write(f"📄 **DEBUG - PDF armazenado:** [{safe_file_name}]({pdf_url})")
                 st.write(f"🔗 **DEBUG - URL Final Gerada:** {pdf_url}")
