@@ -58,12 +58,12 @@ def preprova_page():
                     st.session_state["preprova_id"] = preprova["id"]
                     st.session_state["pdf_url"] = preprova["pdf_url"]
                     st.session_state["menu"] = "Quiz"
-                    st.experimental_rerun()
+                    st.rerun()
             
             with col2:
                 if st.button("🗑️ Apagar", key=f"delete_{preprova['id']}", help="Excluir esta pré-prova permanentemente"):
                     delete_preprova(preprova["id"])
-                    st.experimental_rerun()
+                    st.rerun()
 
 if __name__ == "__main__":
     preprova_page()
