@@ -27,7 +27,9 @@ def main():
     
     # Navegação da Sidebar
     st.sidebar.title("Navegação")
-    menu = st.sidebar.radio("Escolha a página", ["Home", "Upload PDF", "Pré-Prova", "Sair"])
+    # menu = st.sidebar.radio("Escolha a página", ["Home", "Upload PDF", "Pré-Prova", "Sair"])
+    menu = st.sidebar.radio("Escolha a página", ["Home", "Upload PDF", "Pré-Prova", "Sair"], index=["Home", "Upload PDF", "Pré-Prova", "Sair"].index(st.session_state.get("menu", "Home")))
+
 
     if menu == "Home":
         home.home_page()
