@@ -43,14 +43,14 @@ def generate_questions(preprova_id, pdf_url):
     
     prompt = f"""
     Gere 5 questões de múltipla escolha com 4 alternativas cada uma.
-    Formato:
+    **Formato de saída (respeite exatamente esse padrão):**
+    
     Pergunta: (texto da pergunta)
-    Opções:
-    A) (opção 1)
-    B) (opção 2)
-    C) (opção 3)
-    D) (opção 4)
-    Resposta correta: (letra correta)
+    A) (alternativa A)
+    B) (alternativa B)
+    C) (alternativa C)
+    D) (alternativa D)
+    Resposta correta: (Letra da alternativa correta: A, B, C ou D)
     
     Baseie-se no seguinte conteúdo:
     {pdf_text[:2000]}
@@ -72,13 +72,19 @@ def generate_questions(preprova_id, pdf_url):
             if len(lines) < 6:
                 continue  # Ignorar blocos mal formados
 
-            pergunta = lines[0].replace("Pergunta: ", "")
-            opcao_a = lines[1].replace("A) ", "")
-            opcao_b = lines[2].replace("B) ", "")
-            opcao_c = lines[3].replace("C) ", "")
-            opcao_d = lines[4].replace("D) ", "")
-            resposta_correta = lines[5].replace("Resposta correta: ", "")
+            pergunta = lines[0].replace("Pergunta: ", "").strip()
+            opcao_a = lines[1].replace("A) ", "").strip()
+            opcao_b = lines[2].replace("B) ", "").strip()
+            opcao_c = lines[3].replace("C) ", "").strip()
+            opcao_d = lines[4].replace("D) ", "").strip()
+            resposta_correta = lines[5].replace("Resposta correta: ", "").strip()
 
+            # Verifica se todas as opções foram extraídas corretamente
+            if not all([pergunta, opcao_a, opcao_b, opcao_c, opcao_d, resposta_correta]):
+                st.warning(f"⚠️ Questão mal formada ignorada: {question_block}")
+                continue
+
+            # Insere no Supabase
             supabase.table("questoes").insert({
                 "preprova_id": preprova_id,
                 "pergunta": pergunta,
