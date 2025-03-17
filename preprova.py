@@ -42,6 +42,7 @@ def preprova_page():
                     st.session_state["preprova_id"] = preprova["id"]
                     st.session_state["pdf_url"] = preprova["pdf_url"]
                     st.session_state["menu"] = "Quiz"
+                    st.rerun()  # 🔹 Agora o quiz abre no primeiro clique!
 
             with col2:
                 if st.button("🗑️ Apagar", key=f"delete_btn_{preprova['id']}"):
