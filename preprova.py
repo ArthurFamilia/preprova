@@ -1,21 +1,33 @@
 import streamlit as st
+from supabase import create_client
+from config import SUPABASE_URL, SUPABASE_KEY
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def preprova_page():
-    st.title("Pré-Prova")
+    st.title("Minhas Pré-Provas")
 
-    # Verifica se os dados necessários estão disponíveis
-    if "preprova_id" not in st.session_state or "pdf_url" not in st.session_state:
-        st.error("Erro: Nenhuma pré-prova encontrada. Faça o upload de um PDF primeiro.")
+    user_id = st.session_state.get("user_id")
+    if not user_id:
+        st.error("❌ Usuário não autenticado. Faça login novamente.")
         return
 
-    preprova_id = st.session_state["preprova_id"]
-    pdf_url = st.session_state["pdf_url"]
+    # Obtém todas as pré-provas do usuário
+    response = supabase.table("preprovas").select("*").eq("user_id", user_id).execute()
 
-    st.write(f"📂 ID da Pré-Prova: {preprova_id}")
-    st.write(f"📄 PDF: [{pdf_url}]({pdf_url})")
+    if not response.data:
+        st.warning("Nenhuma pré-prova encontrada. Faça o upload de um PDF primeiro.")
+        return
 
-    # Aqui pode adicionar a lógica para exibir perguntas ou permitir download
+    # Lista todas as pré-provas
+    for preprova in response.data:
+        with st.expander(f"📄 Pré-Prova {preprova['id']}"):
+            st.write(f"📂 PDF: [{preprova['pdf_url']}]({preprova['pdf_url']})")
+            if st.button(f"Fazer Quiz {preprova['id']}", key=preprova['id']):
+                st.session_state["preprova_id"] = preprova["id"]
+                st.session_state["pdf_url"] = preprova["pdf_url"]
+                st.session_state["menu"] = "Quiz"
+                st.experimental_rerun()
 
 if __name__ == "__main__":
     preprova_page()
-
