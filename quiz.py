@@ -24,7 +24,6 @@ def quiz_page():
     respostas_corretas = {}
     total_questoes = len(response.data)
 
-    # Mapeia letras para os textos corretos das respostas
     def get_texto_resposta(questao, letra):
         """Retorna o texto correspondente à letra da resposta correta"""
         mapping = {
@@ -35,7 +34,6 @@ def quiz_page():
         }
         return mapping.get(letra, "")
 
-    # Criando um formulário para capturar todas as respostas de uma vez
     with st.form("quiz_form"):
         for questao in response.data:
             st.subheader(f"❓ {questao['pergunta']}")
@@ -50,11 +48,9 @@ def quiz_page():
             resposta = st.radio("Escolha a resposta:", options=opcoes, key=f"resp_{questao['id']}")
             respostas_usuario[questao["id"]] = resposta
 
-            # Obtém a resposta correta em texto (não a letra)
             resposta_correta_letra = questao.get("resposta_correta", "").strip().upper()
             respostas_corretas[questao["id"]] = get_texto_resposta(questao, resposta_correta_letra)
 
-        # Botão para enviar as respostas
         enviar = st.form_submit_button("Enviar Respostas", type="primary")
 
     if enviar:
@@ -71,8 +67,8 @@ def quiz_page():
             else:
                 st.error(f"❌ {questao['pergunta']} - Resposta correta: {resposta_correta}")
 
-        nota = (acertos / total_questoes) * 10
-        st.markdown(f"🎯 **Sua nota: {nota:.2f}/10**")
+        nota = acertos  # Agora a nota vai de 0 a 10, pois cada questão vale 1 ponto
+        st.markdown(f"🎯 **Sua nota: {nota}/10**")
 
 if __name__ == "__main__":
     quiz_page()
