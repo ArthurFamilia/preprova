@@ -34,7 +34,7 @@ def extract_text_from_pdf(pdf_url):
         return None
 
 def generate_questions(preprova_id, pdf_url):
-    """Gera questões e salva no banco"""
+    """Gera 10 questões e salva no banco"""
     st.write("📂 DEBUG - Iniciando geração de questões.")
     pdf_text = extract_text_from_pdf(pdf_url)
     if not pdf_text:
@@ -42,7 +42,7 @@ def generate_questions(preprova_id, pdf_url):
         return False
     
     prompt = f"""
-    Gere 5 questões de múltipla escolha com 4 alternativas cada uma.
+    Gere 10 questões de múltipla escolha com 4 alternativas cada uma.
     **Formato de saída (respeite exatamente esse padrão):**
     
     Pergunta: (texto da pergunta)
@@ -53,7 +53,7 @@ def generate_questions(preprova_id, pdf_url):
     Resposta correta: (Letra da alternativa correta: A, B, C ou D)
     
     Baseie-se no seguinte conteúdo:
-    {pdf_text[:2000]}
+    {pdf_text[:3000]}  # Pegamos um trecho maior do PDF para gerar mais questões.
     """
 
     try:
@@ -95,7 +95,7 @@ def generate_questions(preprova_id, pdf_url):
                 "resposta_correta": resposta_correta
             }).execute()
 
-        st.success("✅ DEBUG - Questões geradas e armazenadas com sucesso.")
+        st.success("✅ DEBUG - 10 Questões geradas e armazenadas com sucesso.")
         return True
     except Exception as e:
         st.error(f"❌ DEBUG - Erro ao gerar perguntas com OpenAI: {str(e)}")
