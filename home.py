@@ -1,17 +1,6 @@
 import streamlit as st
 
 def home_page():
-    st.sidebar.title(f"👋 Bem-vindo, {st.session_state['user_email']}")
-    
-    # 📌 Adicionando um menu lateral com ícones
-    st.sidebar.header("📜 Menu de Navegação")
-    st.sidebar.markdown("🏠 **Home**")
-    st.sidebar.markdown("📤 **Upload PDF**")
-    st.sidebar.markdown("📑 **Pré-Prova**")
-    st.sidebar.markdown("📝 **Quiz**")
-    st.sidebar.markdown("🚪 **Sair**")
-
-    # 🎯 Passos com ícones e formatação bonita
     st.title("📌 Guia Rápido para sua Pré-Prova")
 
     st.markdown("""
