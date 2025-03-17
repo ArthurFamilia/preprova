@@ -144,7 +144,7 @@ def upload_pdf():
                             st.session_state["preprova_id"] = preprova_id
                             st.session_state["pdf_url"] = pdf_url
                             st.session_state["menu"] = "Pré-Prova"  # Definir o menu para redirecionamento
-                            st.experimental_rerun()  # Forçar recarregamento da página
+                            st.rerun()  # Forçar recarregamento da página
 
                         else:
                             st.error("❌ Erro ao gerar questões. Tente novamente.")
