@@ -18,32 +18,43 @@ def quiz_page():
         st.warning("Nenhuma questão encontrada para esta pré-prova.")
         return
 
-    st.write("📝 Responda as perguntas abaixo:")
+    st.write("📖 **Responda as perguntas abaixo:**")
+    
     respostas_usuario = {}
+    respostas_corretas = {}
+    total_questoes = len(response.data)
 
-    for questao in response.data:
-        opcoes = [questao.get("opcao_a", "A"), questao.get("opcao_b", "B"), questao.get("opcao_c", "C"), questao.get("opcao_d", "D")]
-        resposta = st.radio(f"❓ {questao['pergunta']}", opcoes, key=f"resp_{questao['id']}")
-        respostas_usuario[questao["id"]] = resposta
-
-    if st.button("Enviar Respostas"):
-        st.write("📊 Resultado:")
-        
-        respostas_certas = 0
-        total_questoes = len(response.data)
-
+    # Criando um formulário para capturar todas as respostas de uma vez
+    with st.form("quiz_form"):
         for questao in response.data:
-            resposta_correta = questao.get("resposta_correta", "").strip()
+            st.subheader(f"❓ {questao['pergunta']}")
+            resposta = st.radio(
+                "Escolha a resposta:",
+                [questao["opcao_a"], questao["opcao_b"], questao["opcao_c"], questao["opcao_d"]],
+                key=f"resp_{questao['id']}"
+            )
+            respostas_usuario[questao["id"]] = resposta
+            respostas_corretas[questao["id"]] = questao.get("resposta_correta", "").strip()
+
+        # O botão "Enviar Respostas" agora só aparece no final do formulário
+        enviar = st.form_submit_button("Enviar Respostas", type="primary")
+
+    if enviar:
+        st.write("📊 **Resultado:**")
+        
+        acertos = 0
+        for questao in response.data:
             resposta_usuario = respostas_usuario.get(questao["id"], "").strip()
+            resposta_correta = respostas_corretas.get(questao["id"], "").strip()
 
             if resposta_usuario == resposta_correta:
-                respostas_certas += 1
+                acertos += 1
                 st.success(f"✅ {questao['pergunta']} - Correto!")
             else:
                 st.error(f"❌ {questao['pergunta']} - Resposta correta: {resposta_correta}")
 
-        nota = (respostas_certas / total_questoes) * 10
-        st.write(f"🎯 Sua nota: **{nota:.2f}/10**")
+        nota = (acertos / total_questoes) * 10
+        st.markdown(f"🎯 **Sua nota: {nota:.2f}/10**")
 
 if __name__ == "__main__":
     quiz_page()
