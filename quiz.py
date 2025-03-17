@@ -19,7 +19,7 @@ def quiz_page():
         return
 
     st.write("📖 **Responda as perguntas abaixo:**")
-    
+
     respostas_usuario = {}
     respostas_corretas = {}
     total_questoes = len(response.data)
@@ -28,20 +28,29 @@ def quiz_page():
     with st.form("quiz_form"):
         for questao in response.data:
             st.subheader(f"❓ {questao['pergunta']}")
+
+            # Garante que todas as opções existem, evitando erro KeyError
+            opcoes = [
+                questao.get("opcao_a", "A) Alternativa não fornecida"),
+                questao.get("opcao_b", "B) Alternativa não fornecida"),
+                questao.get("opcao_c", "C) Alternativa não fornecida"),
+                questao.get("opcao_d", "D) Alternativa não fornecida")
+            ]
+
             resposta = st.radio(
                 "Escolha a resposta:",
-                [questao["opcao_a"], questao["opcao_b"], questao["opcao_c"], questao["opcao_d"]],
+                options=opcoes,
                 key=f"resp_{questao['id']}"
             )
             respostas_usuario[questao["id"]] = resposta
             respostas_corretas[questao["id"]] = questao.get("resposta_correta", "").strip()
 
-        # O botão "Enviar Respostas" agora só aparece no final do formulário
+        # Garante que o botão de envio está presente no formulário
         enviar = st.form_submit_button("Enviar Respostas", type="primary")
 
     if enviar:
         st.write("📊 **Resultado:**")
-        
+
         acertos = 0
         for questao in response.data:
             resposta_usuario = respostas_usuario.get(questao["id"], "").strip()
