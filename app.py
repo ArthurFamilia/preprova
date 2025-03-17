@@ -21,23 +21,22 @@ def main():
     if not st.session_state["logged_in"]:
         login.login_page()
         return  
-    
+
     st.sidebar.title("Navegação")
 
-    # 🔹 Verifica o menu atual para evitar necessidade de duplo clique
+    # 🔹 Inicializa a sessão do menu corretamente
     if "menu" not in st.session_state:
         st.session_state["menu"] = "Home"
 
-    # 🔹 Define a nova página ANTES de renderizar
-    menu_options = ["Home", "Upload PDF", "Pré-Prova", "Quiz", "Sair"]
-    selected_menu = st.sidebar.radio("Escolha a página", menu_options, 
-                                     index=menu_options.index(st.session_state["menu"]))
+    # 🔹 Atualiza o menu apenas quando o usuário escolhe algo diferente
+    selected_menu = st.sidebar.radio("Escolha a página", ["Home", "Upload PDF", "Pré-Prova", "Quiz", "Sair"], 
+                                     index=["Home", "Upload PDF", "Pré-Prova", "Quiz", "Sair"].index(st.session_state["menu"]))
 
-    # 🔹 Atualiza o estado da sessão ANTES de renderizar
     if selected_menu != st.session_state["menu"]:
         st.session_state["menu"] = selected_menu
+        st.experimental_rerun()  # 🔹 Garante a atualização imediata da interface
 
-    # 🔹 Renderiza a página correta
+    # 🔹 Renderiza a página correta imediatamente
     if st.session_state["menu"] == "Home":
         home.home_page()
     elif st.session_state["menu"] == "Upload PDF":
