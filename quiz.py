@@ -12,30 +12,29 @@ def quiz_page():
         st.error("Nenhuma pré-prova selecionada. Volte ao menu e escolha uma.")
         return
 
-    # Obtém as questões da pré-prova
     response = supabase.table("questoes").select("*").eq("preprova_id", preprova_id).execute()
 
     if not response.data:
         st.warning("Nenhuma questão encontrada para esta pré-prova.")
         return
 
-    # Interface do quiz
-    respostas_certas = 0
-    total_questoes = len(response.data)
-
     st.write("📝 Responda as perguntas abaixo:")
     respostas_usuario = {}
 
     for questao in response.data:
-        resposta = st.radio(f"❓ {questao['pergunta']}", ["A", "B", "C", "D"], key=questao["id"])
+        opcoes = [questao.get("opcao_a", "A"), questao.get("opcao_b", "B"), questao.get("opcao_c", "C"), questao.get("opcao_d", "D")]
+        resposta = st.radio(f"❓ {questao['pergunta']}", opcoes, key=f"resp_{questao['id']}")
         respostas_usuario[questao["id"]] = resposta
 
     if st.button("Enviar Respostas"):
         st.write("📊 Resultado:")
         
+        respostas_certas = 0
+        total_questoes = len(response.data)
+
         for questao in response.data:
-            resposta_correta = questao["resposta_correta"]  # Deve ser armazenado no banco
-            resposta_usuario = respostas_usuario.get(questao["id"], "")
+            resposta_correta = questao.get("resposta_correta", "").strip()
+            resposta_usuario = respostas_usuario.get(questao["id"], "").strip()
 
             if resposta_usuario == resposta_correta:
                 respostas_certas += 1
