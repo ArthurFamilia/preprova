@@ -24,12 +24,22 @@ def quiz_page():
     respostas_corretas = {}
     total_questoes = len(response.data)
 
+    # Mapeia letras para os textos corretos das respostas
+    def get_texto_resposta(questao, letra):
+        """Retorna o texto correspondente à letra da resposta correta"""
+        mapping = {
+            "A": questao.get("opcao_a", ""),
+            "B": questao.get("opcao_b", ""),
+            "C": questao.get("opcao_c", ""),
+            "D": questao.get("opcao_d", ""),
+        }
+        return mapping.get(letra, "")
+
     # Criando um formulário para capturar todas as respostas de uma vez
     with st.form("quiz_form"):
         for questao in response.data:
             st.subheader(f"❓ {questao['pergunta']}")
 
-            # Garante que todas as opções existem, evitando erro KeyError
             opcoes = [
                 questao.get("opcao_a", "A) Alternativa não fornecida"),
                 questao.get("opcao_b", "B) Alternativa não fornecida"),
@@ -37,15 +47,14 @@ def quiz_page():
                 questao.get("opcao_d", "D) Alternativa não fornecida")
             ]
 
-            resposta = st.radio(
-                "Escolha a resposta:",
-                options=opcoes,
-                key=f"resp_{questao['id']}"
-            )
+            resposta = st.radio("Escolha a resposta:", options=opcoes, key=f"resp_{questao['id']}")
             respostas_usuario[questao["id"]] = resposta
-            respostas_corretas[questao["id"]] = questao.get("resposta_correta", "").strip()
 
-        # Garante que o botão de envio está presente no formulário
+            # Obtém a resposta correta em texto (não a letra)
+            resposta_correta_letra = questao.get("resposta_correta", "").strip().upper()
+            respostas_corretas[questao["id"]] = get_texto_resposta(questao, resposta_correta_letra)
+
+        # Botão para enviar as respostas
         enviar = st.form_submit_button("Enviar Respostas", type="primary")
 
     if enviar:
