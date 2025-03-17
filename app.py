@@ -5,7 +5,7 @@ import login
 import home
 import upload
 import preprova
-import quiz  # Novo módulo do Quiz
+import quiz
 
 def init_connection():
     return create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -22,21 +22,28 @@ def main():
         login.login_page()
         return  
 
-    st.sidebar.title("Navegação")
-
-    # 🔹 Inicializa a sessão do menu corretamente
+    # 🔹 Definição do estado inicial do menu
     if "menu" not in st.session_state:
         st.session_state["menu"] = "Home"
 
-    # 🔹 Atualiza o menu apenas quando o usuário escolhe algo diferente
-    selected_menu = st.sidebar.radio("Escolha a página", ["Home", "Upload PDF", "Pré-Prova", "Quiz", "Sair"], 
-                                     index=["Home", "Upload PDF", "Pré-Prova", "Quiz", "Sair"].index(st.session_state["menu"]))
+    # 🔹 Criando um menu bonito com botões
+    with st.sidebar:
+        st.title(f"👋 Bem-vindo, {st.session_state.get('user_email', 'Usuário')}")
+        st.markdown("---")  # Linha divisória estilosa
 
-    if selected_menu != st.session_state["menu"]:
-        st.session_state["menu"] = selected_menu
-        st.rerun()  # 🔹 Garante a atualização imediata da interface
+        if st.button("🏠 Home", key="home_btn"):
+            st.session_state["menu"] = "Home"
+        if st.button("📤 Upload PDF", key="upload_btn"):
+            st.session_state["menu"] = "Upload PDF"
+        if st.button("📑 Pré-Prova", key="preprova_btn"):
+            st.session_state["menu"] = "Pré-Prova"
+        if st.button("📝 Quiz", key="quiz_btn"):
+            st.session_state["menu"] = "Quiz"
+        if st.button("🚪 Sair", key="logout_btn"):
+            st.session_state.clear()
+            st.rerun()
 
-    # 🔹 Renderiza a página correta imediatamente
+    # 🔹 Renderiza a página correta com base na seleção
     if st.session_state["menu"] == "Home":
         home.home_page()
     elif st.session_state["menu"] == "Upload PDF":
@@ -45,9 +52,6 @@ def main():
         preprova.preprova_page()
     elif st.session_state["menu"] == "Quiz":
         quiz.quiz_page()
-    elif st.session_state["menu"] == "Sair":
-        st.session_state.clear()
-        st.rerun()
 
 if __name__ == "__main__":
     main()
