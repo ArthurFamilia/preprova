@@ -6,83 +6,89 @@ import streamlit as st
 import time
 import re
 
-# ✅ Inicializa os clientes
+# Inicializa os clientes
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-client = openai.OpenAI(api_key=OPENAI_KEY)  # ✅ Corrigido: Agora client está corretamente definido
+client = openai.OpenAI(api_key=OPENAI_KEY)
 
 def extract_text_from_pdf(pdf_url):
     """Baixa o PDF do Supabase e extrai o texto."""
-
     st.write(f"📂 DEBUG - Extraindo texto do PDF: {pdf_url}")
-
-    # 🔹 Verifica se a URL pública tem barras duplas e remove
     pdf_url = re.sub(r'(?<!:)//+', '/', pdf_url)
-
-    # 🔹 Obtém apenas o nome do arquivo do Supabase Storage
     file_path_in_bucket = pdf_url.replace(f"{SUPABASE_URL}/storage/v1/object/public/pdfs/", "")
-
-    # st.write(f"📂 DEBUG - Caminho absoluto do arquivo salvo na tabela: {file_path_in_bucket}")
-
-    # 🔹 Aguarda 10 segundos para garantir que o Supabase processe o upload
+    
     st.write("⏳ DEBUG - Aguardando 10 segundos antes do download...")
     time.sleep(10)
 
-    # 🔹 Lista arquivos disponíveis no bucket para depuração
     try:
-        existing_files = supabase.storage.from_("pdfs").list()
-        existing_file_names = [file["name"] for file in existing_files]
-
-        # st.write(f"📂 DEBUG - Arquivos disponíveis no bucket: {existing_file_names}")
-
-        # 🔹 Verifica se o arquivo realmente existe no bucket antes de tentar baixar
-        if file_path_in_bucket not in existing_file_names:
-            st.error(f"❌ DEBUG - O arquivo '{file_path_in_bucket}' NÃO FOI ENCONTRADO no bucket!")
-            return None
-    except Exception as e:
-        st.error(f"❌ DEBUG - Erro ao listar arquivos do Supabase: {str(e)}")
-        return None
-
-    # 🔹 Tenta baixar o arquivo usando apenas o nome correto do arquivo
-    try:
-        # st.write(f"📂 DEBUG - Tentando baixar o arquivo com caminho correto: {file_path_in_bucket}")
-
         response = supabase.storage.from_("pdfs").download(file_path_in_bucket)
-
         if not response:
             st.error(f"❌ DEBUG - Erro ao baixar o PDF do Supabase: {file_path_in_bucket} não encontrado.")
             return None
 
-        # st.write(f"✅ DEBUG - Arquivo baixado com sucesso.")
-
-        # 🔹 Lendo o conteúdo do PDF
         with fitz.open(stream=response, filetype="pdf") as doc:
             text = "\n".join([page.get_text("text") for page in doc])
-        
-        # st.write("✅ DEBUG - Texto extraído com sucesso.")
+
         return text
     except Exception as e:
         st.error(f"❌ DEBUG - Erro ao extrair texto do PDF: {str(e)}")
         return None
 
 def generate_questions(preprova_id, pdf_url):
+    """Gera questões e salva no banco"""
     st.write("📂 DEBUG - Iniciando geração de questões.")
     pdf_text = extract_text_from_pdf(pdf_url)
     if not pdf_text:
         st.error("❌ DEBUG - Nenhum texto extraído do PDF. Abortando geração de questões.")
         return False
     
-    prompt = f"Crie 5 perguntas no formato flashcards com base neste texto:\n{pdf_text[:2000]}"
+    prompt = f"""
+    Gere 5 questões de múltipla escolha com 4 alternativas cada uma.
+    Formato:
+    Pergunta: (texto da pergunta)
+    Opções:
+    A) (opção 1)
+    B) (opção 2)
+    C) (opção 3)
+    D) (opção 4)
+    Resposta correta: (letra correta)
+    
+    Baseie-se no seguinte conteúdo:
+    {pdf_text[:2000]}
+    """
+
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "Você é um criador de flashcards para estudo médico."},
+                {"role": "system", "content": "Você é um criador de questões para estudo médico."},
                 {"role": "user", "content": prompt}
             ]
         )
-        questions = [choice.message.content for choice in response.choices]
-        for pergunta in questions:
-            supabase.table("questoes").insert({"preprova_id": preprova_id, "pergunta": pergunta}).execute()
+
+        questions = response.choices[0].message.content.split("\n\n")
+
+        for question_block in questions:
+            lines = question_block.split("\n")
+            if len(lines) < 6:
+                continue  # Ignorar blocos mal formados
+
+            pergunta = lines[0].replace("Pergunta: ", "")
+            opcao_a = lines[1].replace("A) ", "")
+            opcao_b = lines[2].replace("B) ", "")
+            opcao_c = lines[3].replace("C) ", "")
+            opcao_d = lines[4].replace("D) ", "")
+            resposta_correta = lines[5].replace("Resposta correta: ", "")
+
+            supabase.table("questoes").insert({
+                "preprova_id": preprova_id,
+                "pergunta": pergunta,
+                "opcao_a": opcao_a,
+                "opcao_b": opcao_b,
+                "opcao_c": opcao_c,
+                "opcao_d": opcao_d,
+                "resposta_correta": resposta_correta
+            }).execute()
+
         st.success("✅ DEBUG - Questões geradas e armazenadas com sucesso.")
         return True
     except Exception as e:
