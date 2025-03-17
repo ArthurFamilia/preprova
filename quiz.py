@@ -25,14 +25,14 @@ def quiz_page():
     total_questoes = len(response.data)
 
     def get_texto_resposta(questao, letra):
-        """Retorna o texto correspondente à letra da resposta correta"""
+        """Converte a resposta correta de letra para o texto correspondente"""
         mapping = {
-            "A": questao.get("opcao_a", ""),
-            "B": questao.get("opcao_b", ""),
-            "C": questao.get("opcao_c", ""),
-            "D": questao.get("opcao_d", ""),
+            "A": questao.get("opcao_a", "").strip(),
+            "B": questao.get("opcao_b", "").strip(),
+            "C": questao.get("opcao_c", "").strip(),
+            "D": questao.get("opcao_d", "").strip(),
         }
-        return mapping.get(letra, "")
+        return mapping.get(letra, "Resposta não encontrada").strip()
 
     with st.form("quiz_form"):
         for questao in response.data:
@@ -48,6 +48,7 @@ def quiz_page():
             resposta = st.radio("Escolha a resposta:", options=opcoes, key=f"resp_{questao['id']}")
             respostas_usuario[questao["id"]] = resposta
 
+            # 🔹 Corrige o armazenamento da resposta correta convertendo de LETRA para TEXTO
             resposta_correta_letra = questao.get("resposta_correta", "").strip().upper()
             respostas_corretas[questao["id"]] = get_texto_resposta(questao, resposta_correta_letra)
 
