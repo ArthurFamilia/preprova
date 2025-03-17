@@ -26,7 +26,10 @@ def delete_preprova(preprova_id):
         # Apaga a pré-prova do banco de dados
         supabase.table("preprovas").delete().eq("id", preprova_id).execute()
 
-        st.success("🗑️ Pré-prova apagada com sucesso!")
+        st.success(f"🗑️ Pré-prova {preprova_id} apagada com sucesso! Atualize a página para ver as mudanças.")
+
+        # Atualiza a lista de pré-provas no session state
+        st.session_state["preprovas"] = [p for p in st.session_state.get("preprovas", []) if p["id"] != preprova_id]
 
     except Exception as e:
         st.error(f"❌ Erro ao apagar a pré-prova: {str(e)}")
@@ -39,31 +42,7 @@ def preprova_page():
         st.error("❌ Usuário não autenticado. Faça login novamente.")
         return
 
-    # Obtém todas as pré-provas do usuário
-    response = supabase.table("preprovas").select("*").eq("user_id", user_id).execute()
-
-    if not response.data:
-        st.warning("Nenhuma pré-prova encontrada. Faça o upload de um PDF primeiro.")
-        return
-
-    # Lista todas as pré-provas
-    for preprova in response.data:
-        with st.expander(f"📄 Pré-Prova {preprova['id']}"):
-            st.write(f"📂 PDF: [{preprova['pdf_url']}]({preprova['pdf_url']})")
-            
-            col1, col2 = st.columns([3, 1])
-
-            with col1:
-                if st.button(f"📝 Fazer Quiz {preprova['id']}", key=f"quiz_{preprova['id']}"):
-                    st.session_state["preprova_id"] = preprova["id"]
-                    st.session_state["pdf_url"] = preprova["pdf_url"]
-                    st.session_state["menu"] = "Quiz"
-                    st.rerun()
-            
-            with col2:
-                if st.button("🗑️ Apagar", key=f"delete_{preprova['id']}", help="Excluir esta pré-prova permanentemente"):
-                    delete_preprova(preprova["id"])
-                    st.rerun()
-
-if __name__ == "__main__":
-    preprova_page()
+    # Se as pré-provas ainda não foram carregadas na sessão, busca do banco
+    if "preprovas" not in st.session_state:
+        response = supabase.table("preprovas").select("*").eq("user_id", user_id).execute()
+       
