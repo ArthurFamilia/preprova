@@ -34,7 +34,7 @@ def main():
 
     if selected_menu != st.session_state["menu"]:
         st.session_state["menu"] = selected_menu
-        st.experimental_rerun()  # 🔹 Garante a atualização imediata da interface
+        st.rerun()  # 🔹 Garante a atualização imediata da interface
 
     # 🔹 Renderiza a página correta imediatamente
     if st.session_state["menu"] == "Home":
