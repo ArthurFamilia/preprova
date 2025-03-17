@@ -5,7 +5,7 @@ import login
 import home
 import upload
 import preprova
-import quiz  # Novo módulo de quiz
+import quiz  # Novo módulo do Quiz
 
 def init_connection():
     return create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -23,7 +23,14 @@ def main():
         return  
     
     st.sidebar.title("Navegação")
-    menu = st.sidebar.radio("Escolha a página", ["Home", "Upload PDF", "Pré-Prova", "Quiz", "Sair"])
+
+    # 🔹 Usa session_state para mudar de página
+    menu_options = ["Home", "Upload PDF", "Pré-Prova", "Quiz", "Sair"]
+    menu = st.sidebar.radio("Escolha a página", menu_options, 
+                            index=menu_options.index(st.session_state.get("menu", "Home")))
+
+    # 🔹 Atualiza a navegação dinamicamente com base na escolha do usuário
+    st.session_state["menu"] = menu
 
     if menu == "Home":
         home.home_page()
