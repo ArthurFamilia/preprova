@@ -53,7 +53,7 @@ def generate_questions(preprova_id, pdf_url):
     Resposta correta: (Letra da alternativa correta: A, B, C ou D)
     
     Baseie-se no seguinte conteúdo:
-    {pdf_text[:3000]}  # Pegamos um trecho maior do PDF para gerar mais questões.
+    {pdf_text[:3000]}
     """
 
     try:
@@ -70,21 +70,19 @@ def generate_questions(preprova_id, pdf_url):
         for question_block in questions:
             lines = question_block.split("\n")
             if len(lines) < 6:
-                continue  # Ignorar blocos mal formados
+                continue  
 
             pergunta = lines[0].replace("Pergunta: ", "").strip()
             opcao_a = lines[1].replace("A) ", "").strip()
             opcao_b = lines[2].replace("B) ", "").strip()
             opcao_c = lines[3].replace("C) ", "").strip()
             opcao_d = lines[4].replace("D) ", "").strip()
-            resposta_correta = lines[5].replace("Resposta correta: ", "").strip()
+            resposta_correta = lines[5].replace("Resposta correta: ", "").strip().upper()
 
-            # Verifica se todas as opções foram extraídas corretamente
-            if not all([pergunta, opcao_a, opcao_b, opcao_c, opcao_d, resposta_correta]):
-                st.warning(f"⚠️ Questão mal formada ignorada: {question_block}")
-                continue
+            if resposta_correta not in ["A", "B", "C", "D"]:
+                st.error(f"⚠️ Erro: Resposta correta inválida para pergunta '{pergunta}'")
+                continue  
 
-            # Insere no Supabase
             supabase.table("questoes").insert({
                 "preprova_id": preprova_id,
                 "pergunta": pergunta,
