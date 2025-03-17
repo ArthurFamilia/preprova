@@ -7,7 +7,6 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 def delete_preprova(preprova_id):
     """Apaga a pré-prova do banco de dados e do armazenamento."""
     try:
-        # Obtém a pré-prova para deletar o arquivo do Supabase Storage
         response = supabase.table("preprovas").select("pdf_url").eq("id", preprova_id).execute()
         
         if not response.data:
@@ -15,20 +14,13 @@ def delete_preprova(preprova_id):
             return
 
         pdf_url = response.data[0]["pdf_url"]
-        file_name = pdf_url.split("/")[-1]  # Extrai o nome do arquivo do Supabase Storage
-        
-        # Apaga o arquivo do Supabase Storage
+        file_name = pdf_url.split("/")[-1]  
+
         supabase.storage.from_("pdfs").remove([file_name])
-
-        # Apaga as questões associadas à pré-prova
         supabase.table("questoes").delete().eq("preprova_id", preprova_id).execute()
-
-        # Apaga a pré-prova do banco de dados
         supabase.table("preprovas").delete().eq("id", preprova_id).execute()
 
-        # Remove a pré-prova da sessão para refletir a mudança
         st.session_state["preprovas"] = [p for p in st.session_state.get("preprovas", []) if p["id"] != preprova_id]
-
         st.success(f"🗑️ Pré-prova {preprova_id} apagada com sucesso!")
 
     except Exception as e:
@@ -51,8 +43,8 @@ def preprova_page():
         st.error("❌ Usuário não autenticado. Faça login novamente.")
         return
 
-    # Carrega as pré-provas do banco toda vez que a página for acessada
-    st.session_state["preprovas"] = carregar_preprovas()
+    if "preprovas" not in st.session_state:
+        st.session_state["preprovas"] = carregar_preprovas()
 
     preprovas = st.session_state["preprovas"]
 
@@ -60,7 +52,6 @@ def preprova_page():
         st.warning("Nenhuma pré-prova encontrada. Faça o upload de um PDF primeiro.")
         return
 
-    # Lista todas as pré-provas
     for preprova in preprovas:
         with st.expander(f"📄 Pré-Prova {preprova['id']}"):
             st.write(f"📂 PDF: [{preprova['pdf_url']}]({preprova['pdf_url']})")
@@ -71,10 +62,10 @@ def preprova_page():
                 if st.button(f"📝 Fazer Quiz {preprova['id']}", key=f"quiz_{preprova['id']}"):
                     st.session_state["preprova_id"] = preprova["id"]
                     st.session_state["pdf_url"] = preprova["pdf_url"]
-                    st.session_state["menu"] = "Quiz"
+                    st.session_state["menu"] = "Quiz"  # Define a página corretamente
 
             with col2:
-                if st.button("🗑️ Apagar", key=f"delete_{preprova['id']}", help="Excluir esta pré-prova permanentemente"):
+                if st.button("🗑️ Apagar", key=f"delete_{preprova['id']}"):
                     delete_preprova(preprova["id"])
 
 if __name__ == "__main__":
