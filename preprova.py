@@ -20,7 +20,9 @@ def delete_preprova(preprova_id):
         supabase.table("questoes").delete().eq("preprova_id", preprova_id).execute()
         supabase.table("preprovas").delete().eq("id", preprova_id).execute()
 
+        # Remove a pré-prova da sessão
         st.session_state["preprovas"] = [p for p in st.session_state.get("preprovas", []) if p["id"] != preprova_id]
+
         st.success(f"🗑️ Pré-prova {preprova_id} apagada com sucesso!")
 
     except Exception as e:
@@ -59,13 +61,13 @@ def preprova_page():
             col1, col2 = st.columns([3, 1])
 
             with col1:
-                if st.button(f"📝 Fazer Quiz {preprova['id']}", key=f"quiz_{preprova['id']}"):
+                if st.button(f"📝 Fazer Quiz", key=f"quiz_btn_{preprova['id']}"):
                     st.session_state["preprova_id"] = preprova["id"]
                     st.session_state["pdf_url"] = preprova["pdf_url"]
-                    st.session_state["menu"] = "Quiz"  # Define a página corretamente
+                    st.session_state["menu"] = "Quiz"
 
             with col2:
-                if st.button("🗑️ Apagar", key=f"delete_{preprova['id']}"):
+                if st.button("🗑️ Apagar", key=f"delete_btn_{preprova['id']}"):
                     delete_preprova(preprova["id"])
 
 if __name__ == "__main__":
