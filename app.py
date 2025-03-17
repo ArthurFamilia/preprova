@@ -24,23 +24,29 @@ def main():
     
     st.sidebar.title("Navegação")
 
-    # 🔹 Usa session_state para mudar de página
+    # 🔹 Verifica o menu atual para evitar necessidade de duplo clique
+    if "menu" not in st.session_state:
+        st.session_state["menu"] = "Home"
+
+    # 🔹 Define a nova página ANTES de renderizar
     menu_options = ["Home", "Upload PDF", "Pré-Prova", "Quiz", "Sair"]
-    menu = st.sidebar.radio("Escolha a página", menu_options, 
-                            index=menu_options.index(st.session_state.get("menu", "Home")))
+    selected_menu = st.sidebar.radio("Escolha a página", menu_options, 
+                                     index=menu_options.index(st.session_state["menu"]))
 
-    # 🔹 Atualiza a navegação dinamicamente com base na escolha do usuário
-    st.session_state["menu"] = menu
+    # 🔹 Atualiza o estado da sessão ANTES de renderizar
+    if selected_menu != st.session_state["menu"]:
+        st.session_state["menu"] = selected_menu
 
-    if menu == "Home":
+    # 🔹 Renderiza a página correta
+    if st.session_state["menu"] == "Home":
         home.home_page()
-    elif menu == "Upload PDF":
+    elif st.session_state["menu"] == "Upload PDF":
         upload.upload_pdf()
-    elif menu == "Pré-Prova":
+    elif st.session_state["menu"] == "Pré-Prova":
         preprova.preprova_page()
-    elif menu == "Quiz":
+    elif st.session_state["menu"] == "Quiz":
         quiz.quiz_page()
-    elif menu == "Sair":
+    elif st.session_state["menu"] == "Sair":
         st.session_state.clear()
         st.rerun()
 
